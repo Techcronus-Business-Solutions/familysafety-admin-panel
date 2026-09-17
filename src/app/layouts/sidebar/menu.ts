@@ -73,6 +73,27 @@ export const MENU: MenuItem[] = [
         parentId: 1
     },
     {
+        id: 184,
+        label: 'MENUITEMS.TERMSCONDITIONS.LIST.TERMSCONDITIONS',
+        icon: 'ph-file-text',
+        link: '/terms-conditions-management',
+        parentId: 1
+    },
+    {
+        id: 185,
+        label: 'MENUITEMS.PRIVACYPOLICY.LIST.PRIVACYPOLICY',
+        icon: 'ph-shield-check',
+        link: '/privacy-policy-management',
+        parentId: 1
+    },
+    {
+        id: 186,
+        label: 'MENUITEMS.REFERRALTERMSCONDITIONS.LIST.REFERRALTERMSCONDITIONS',
+        icon: 'ph-file-text',
+        link: '/referral-terms-conditions-management',
+        parentId: 1
+    },
+    {
         id: 178,
         label: 'MENUITEMS.MONITORING.TEXT',
         isTitle: true

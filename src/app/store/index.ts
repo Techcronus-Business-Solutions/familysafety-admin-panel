@@ -24,6 +24,9 @@ import { subscriptionReducer, SubscriptionState } from './Subscription/subscript
 import { dashboardReducer, DashboardState } from './Dashboard/dashboard.reducer';
 import { reducer as monitoringReducer, State as MonitoringState } from './Monitoring/monitoring.reducer';
 import { surveyReducer, SurveyState } from './Survey/survey.reducer';
+import { termsConditionsReducer, TermsConditionsState } from './TermsConditions/terms-conditions.reducer';
+import { privacyPolicyReducer, PrivacyPolicyState } from './PrivacyPolicy/privacy-policy.reducer';
+import { referralTermsConditionsReducer, ReferralTermsConditionsState } from './ReferralTermsConditions/referral-terms-conditions.reducer';
 
 
 export interface RootReducerState {
@@ -53,6 +56,9 @@ export interface RootReducerState {
     dashboard: DashboardState;
     monitorings: MonitoringState;
     survey: SurveyState;
+    termsConditions: TermsConditionsState;
+    privacyPolicy: PrivacyPolicyState;
+    referralTermsConditions: ReferralTermsConditionsState;
 }
 
 export const rootReducer: ActionReducerMap<RootReducerState> = {
@@ -82,4 +88,7 @@ export const rootReducer: ActionReducerMap<RootReducerState> = {
     dashboard: dashboardReducer,
     monitorings: monitoringReducer,
     survey: surveyReducer,
+    termsConditions: termsConditionsReducer,
+    privacyPolicy: privacyPolicyReducer,
+    referralTermsConditions: referralTermsConditionsReducer,
 }

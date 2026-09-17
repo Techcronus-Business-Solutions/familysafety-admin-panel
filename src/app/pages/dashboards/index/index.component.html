@@ -313,12 +313,21 @@
                 <h4 class="card-title mb-0">Revenue by Plan</h4>
             </div>
             <div class="card-body">
+                @if (hasPieData(planPieChart)) {
                 <div id="plan-pie-chart" class="apex-charts chart-pie">
                     <apx-chart [series]="planPieChart.series" [chart]="planPieChart.chart"
                         [labels]="planPieChart.labels" [legend]="planPieChart.legend" [colors]="planPieChart.colors"
                         [dataLabels]="planPieChart.dataLabels" [plotOptions]="planPieChart.plotOptions"
                         [states]="planPieChart.states" dir="ltr"></apx-chart>
                 </div>
+                } @else {
+                <div class="noresult chart-pie-empty">
+                    <div class="text-center">
+                        <i class="ri-pie-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -328,6 +337,7 @@
                 <h4 class="card-title mb-0">Renewals by Plan</h4>
             </div>
             <div class="card-body">
+                @if (hasPieData(renewalsPlanChart)) {
                 <div id="renewals-plan-chart" class="apex-charts chart-pie">
                     <apx-chart [series]="renewalsPlanChart.series" [chart]="renewalsPlanChart.chart"
                         [labels]="renewalsPlanChart.labels" [legend]="renewalsPlanChart.legend"
@@ -335,6 +345,14 @@
                         [plotOptions]="renewalsPlanChart.plotOptions" [states]="renewalsPlanChart.states"
                         dir="ltr"></apx-chart>
                 </div>
+                } @else {
+                <div class="noresult chart-pie-empty">
+                    <div class="text-center">
+                        <i class="ri-pie-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -345,6 +363,7 @@
                 <h4 class="card-title mb-0">Revenue by Country</h4>
             </div>
             <div class="card-body">
+                @if (hasPieData(revenueByCountryChart)) {
                 <div id="revenue-country-chart" class="apex-charts chart-pie">
                     <apx-chart [series]="revenueByCountryChart.series" [chart]="revenueByCountryChart.chart"
                         [labels]="revenueByCountryChart.labels" [legend]="revenueByCountryChart.legend"
@@ -353,6 +372,14 @@
                         dir="ltr">
                     </apx-chart>
                 </div>
+                } @else {
+                <div class="noresult chart-pie-empty">
+                    <div class="text-center">
+                        <i class="ri-pie-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -363,6 +390,7 @@
                 <h4 class="card-title mb-0">Users by Device</h4>
             </div>
             <div class="card-body">
+                @if (hasPieData(usersByDeviceChart)) {
                 <div id="users-device-chart" class="apex-charts chart-pie">
                     <apx-chart [series]="usersByDeviceChart.series" [chart]="usersByDeviceChart.chart"
                         [labels]="usersByDeviceChart.labels" [legend]="usersByDeviceChart.legend"
@@ -370,6 +398,14 @@
                         [plotOptions]="usersByDeviceChart.plotOptions" [states]="usersByDeviceChart.states" dir="ltr">
                     </apx-chart>
                 </div>
+                } @else {
+                <div class="noresult chart-pie-empty">
+                    <div class="text-center">
+                        <i class="ri-pie-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>

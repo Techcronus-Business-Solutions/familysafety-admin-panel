@@ -66,6 +66,13 @@ export class SurveyService {
       );
   }
 
+  translateSurveyQuestion(id: number, lang: string): Observable<any> {
+    const params = new HttpParams().set('lang', lang);
+    return this.http
+      .post<any>(`${this.apiUrl}onboarding_questions/${id}/translate/`, {}, { headers: this.headers, params })
+      .pipe(catchError((error: any) => throwError(() => this.parseError(error))));
+  }
+
   getLanguages(): Observable<any> {
     return this.http
       .get<any>(`${this.apiUrl}languages/`, { headers: this.headers })

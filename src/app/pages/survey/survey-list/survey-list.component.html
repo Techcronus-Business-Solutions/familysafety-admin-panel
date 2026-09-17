@@ -160,17 +160,13 @@
           <!-- Language (edit only) -->
           @if (isEditing) {
           <div class="mb-3">
-            <label class="form-label d-block">Language</label>
-            <div class="d-flex gap-3 flex-wrap">
-              <div class="form-check" *ngFor="let lang of languages">
-                <input class="form-check-input" [id]="'lang-' + (lang.code || lang.id)" type="radio" name="lang"
-                  [title]="lang.name || lang.language_name" [value]="lang.code || lang.id"
-                  [checked]="selectedLanguage == (lang.code || lang.id)"
-                  (change)="onLanguageChange(lang.code || lang.id)">
-                <label class="form-check-label" [for]="'lang-' + (lang.code || lang.id)">{{ lang.name ||
-                  lang.language_name }}</label>
-              </div>
-            </div>
+            <label class="form-label d-block" for="lang-select">Language</label>
+            <select class="form-select w-auto" id="lang-select" name="lang"
+              [ngModel]="selectedLanguage" [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="onLanguageChange($event)">
+              <option *ngFor="let lang of languages" [value]="lang.code || lang.id">{{ lang.name ||
+                lang.language_name }}</option>
+            </select>
           </div>
           }
 
@@ -220,6 +216,14 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+        @if (isEditing && selectedLanguage !== 'en') {
+        <button type="button" class="btn btn-info" (click)="translateQuestion()" [disabled]="translating || modalLoading">
+          @if (translating) {
+          <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+          }
+          Translate
+        </button>
+        }
         <button type="button" class="btn btn-primary" (click)="onSubmit()"
           [disabled]="!form || form.invalid || modalLoading">
           @if (modalLoading) {

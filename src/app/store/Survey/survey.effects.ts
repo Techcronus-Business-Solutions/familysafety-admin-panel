@@ -50,6 +50,40 @@ export class SurveyEffects {
     )
   );
 
+  translateSurveyQuestion$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SurveyActions.translateSurveyQuestion),
+      concatMap(({ id, lang }) =>
+        this.surveyService.translateSurveyQuestion(id, lang).pipe(
+          map((response: any) => SurveyActions.translateSurveyQuestionSuccess({ response })),
+          catchError((error) => of(SurveyActions.translateSurveyQuestionFailure({ error })))
+        )
+      )
+    )
+  );
+
+  translateSurveyQuestionSuccess$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SurveyActions.translateSurveyQuestionSuccess),
+      tap(() => {
+        try {
+          this.toastr.success('Question translated successfully', 'Success');
+        } catch (e) { }
+      })
+    ), { dispatch: false }
+  );
+
+  translateSurveyQuestionFailure$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SurveyActions.translateSurveyQuestionFailure),
+      tap((action: any) => {
+        try {
+          this.toastr.error(action.error || 'Failed to translate question', 'Error');
+        } catch (e) { }
+      })
+    ), { dispatch: false }
+  );
+
   getLanguagesFailure$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SurveyActions.getLanguagesFailure),

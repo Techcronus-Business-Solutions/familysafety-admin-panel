@@ -90,6 +90,21 @@ export const loadSurveyStatsFailure = createAction(
   props<{ error: any }>()
 );
 
+export const translateSurveyQuestion = createAction(
+  '[Survey] Translate Survey Question',
+  props<{ id: number; lang: string }>()
+);
+
+export const translateSurveyQuestionSuccess = createAction(
+  '[Survey] Translate Survey Question Success',
+  props<{ response: any }>()
+);
+
+export const translateSurveyQuestionFailure = createAction(
+  '[Survey] Translate Survey Question Failure',
+  props<{ error: any }>()
+);
+
 export const getLanguages = createAction('[Survey] Get Languages');
 
 export const getLanguagesSuccess = createAction(

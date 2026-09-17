@@ -83,6 +83,13 @@
   overflow: visible;
 }
 
+.chart-pie-empty {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .dashboard-table {
 
   th,

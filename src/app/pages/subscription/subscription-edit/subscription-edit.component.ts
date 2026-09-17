@@ -1,18 +1,18 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Actions, ofType } from '@ngrx/effects';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { selectEntities } from 'src/app/store/Subscription/subscription.reducer';
-import { getSubscription, getSubscriptionSuccess, getSubscriptionFailure, updateSubscription, getLanguages, getLanguagesSuccess, getLanguagesFailure, translateToAllLanguages, translateToAllLanguagesSuccess, translateToAllLanguagesFailure } from 'src/app/store/Subscription/subscription.actions';
+import { getSubscription, getSubscriptionSuccess, getSubscriptionFailure, updateSubscription, getLanguages, getLanguagesSuccess, getLanguagesFailure, translateSubscription, translateSubscriptionSuccess, translateSubscriptionFailure } from 'src/app/store/Subscription/subscription.actions';
 import { ListStateService } from 'src/app/core/services/list-state.service';
 
 @Component({
   selector: 'app-subscription-edit',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './subscription-edit.component.html',
   styleUrl: './subscription-edit.component.scss',
 })
@@ -28,7 +28,7 @@ export class SubscriptionEditComponent implements OnDestroy {
   selectedLanguage: string = 'en';
   private destroy$ = new Subject<void>();
 
-  constructor(private route: ActivatedRoute, private fb: FormBuilder, private store: Store, private actions$: Actions, private listState: ListStateService) { }
+  constructor(private route: ActivatedRoute, private fb: FormBuilder, private store: Store, private actions$: Actions, private listState: ListStateService, private router: Router) { }
 
   ngOnInit(): void {
     this.editForm = this.fb.group({
@@ -145,14 +145,15 @@ export class SubscriptionEditComponent implements OnDestroy {
     });
 
     this.actions$.pipe(
-      ofType(translateToAllLanguagesSuccess),
+      ofType(translateSubscriptionSuccess),
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.hidePreloader();
+      this.loadSubscription(this.selectedLanguage);
     });
 
     this.actions$.pipe(
-      ofType(translateToAllLanguagesFailure),
+      ofType(translateSubscriptionFailure),
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.hidePreloader();
@@ -282,9 +283,16 @@ export class SubscriptionEditComponent implements OnDestroy {
     return interval;
   }
 
-  translateToAllLanguages(): void {
+  translateSubscription(): void {
+    if (this.selectedLanguage === 'en') {
+      return;
+    }
     this.showPreloader();
-    this.store.dispatch(translateToAllLanguages({ id: this.subscriptionId }));
+    this.store.dispatch(translateSubscription({ id: this.subscriptionId, lang: this.selectedLanguage }));
+  }
+
+  goBack(): void {
+    this.router.navigate(['/subscription']);
   }
 
   private showPreloader(): void {

@@ -1,6 +1,9 @@
 <div class="card">
-  <div class="card-header">
+  <div class="card-header d-flex align-items-center justify-content-between">
     <h4 class="card-title mb-0">Create New Subscription</h4>
+    <button type="button" class="btn btn-light" (click)="goBack()">
+      <i class="ri-arrow-left-line me-1"></i> Back
+    </button>
   </div>
   <div class="card-body">
     <form [formGroup]="createForm" (ngSubmit)="onSubmit()">

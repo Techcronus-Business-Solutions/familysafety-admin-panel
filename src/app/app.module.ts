@@ -54,6 +54,9 @@ import { SubscriptionEffects } from './store/Subscription/subscription.effects';
 import { DashboardEffects } from './store/Dashboard/dashboard.effects';
 import { MonitoringEffects } from './store/Monitoring/monitoring.effects';
 import { SurveyEffects } from './store/Survey/survey.effects';
+import { TermsConditionsEffects } from './store/TermsConditions/terms-conditions.effects';
+import { PrivacyPolicyEffects } from './store/PrivacyPolicy/privacy-policy.effects';
+import { ReferralTermsConditionsEffects } from './store/ReferralTermsConditions/referral-terms-conditions.effects';
 import { SubscriptionSummaryComponent } from './pages/dashboards/index/subscription-summary.component';
 
 export function createTranslateLoader(http: HttpClient): any {
@@ -110,7 +113,10 @@ if (environment.defaultauth === 'firebase') {
       SubscriptionEffects,
       DashboardEffects,
       MonitoringEffects,
-      SurveyEffects
+      SurveyEffects,
+      TermsConditionsEffects,
+      PrivacyPolicyEffects,
+      ReferralTermsConditionsEffects
     ]),
     AngularFireModule.initializeApp(environment.firebaseConfig),
     BrowserModule,

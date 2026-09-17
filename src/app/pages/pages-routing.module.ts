@@ -21,6 +21,15 @@ const routes: Routes = [
     path: 'survey', loadChildren: () => import('./survey/survey.module').then(m => m.SurveyModule)
   },
   {
+    path: 'terms-conditions-management', loadChildren: () => import('./terms-conditions-management/terms-conditions-management.module').then(m => m.TermsConditionsManagementModule)
+  },
+  {
+    path: 'privacy-policy-management', loadChildren: () => import('./privacy-policy-management/privacy-policy-management.module').then(m => m.PrivacyPolicyManagementModule)
+  },
+  {
+    path: 'referral-terms-conditions-management', loadChildren: () => import('./referral-terms-conditions-management/referral-terms-conditions-management.module').then(m => m.ReferralTermsConditionsManagementModule)
+  },
+  {
     path: 'group', loadChildren: () => import('./group/group.module').then(m => m.GroupModule)
   },
   {

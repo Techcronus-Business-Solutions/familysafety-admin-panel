@@ -28,6 +28,9 @@ import {
   getLanguages,
   getLanguagesSuccess,
   getLanguagesFailure,
+  translateSurveyQuestion,
+  translateSurveyQuestionSuccess,
+  translateSurveyQuestionFailure,
 } from 'src/app/store/Survey/survey.actions';
 import {
   selectSurveyItems,
@@ -57,6 +60,7 @@ export class SurveyListComponent implements OnInit, OnDestroy {
   showModal = false;
   isEditing = false;
   modalLoading = false;
+  translating = false;
   editId: number | null = null;
   form!: FormGroup;
 
@@ -129,6 +133,24 @@ export class SurveyListComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((action: any) => {
       console.error('Failed to load languages', action.error);
+    });
+
+    this.actions$.pipe(
+      ofType(translateSurveyQuestionSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.translating = false;
+      if (this.editId) {
+        this.modalLoading = true;
+        this.store.dispatch(getSurvey({ id: this.editId, language: this.selectedLanguage }));
+      }
+    });
+
+    this.actions$.pipe(
+      ofType(translateSurveyQuestionFailure),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.translating = false;
     });
 
     this.loadPage();
@@ -210,6 +232,14 @@ export class SurveyListComponent implements OnInit, OnDestroy {
   }
 
 
+  translateQuestion(): void {
+    if (!this.editId || this.selectedLanguage === 'en') {
+      return;
+    }
+    this.translating = true;
+    this.store.dispatch(translateSurveyQuestion({ id: this.editId, lang: this.selectedLanguage }));
+  }
+
   closeModal(): void {
     this.showModal = false;
     this.modalLoading = false;
@@ -254,10 +284,9 @@ export class SurveyListComponent implements OnInit, OnDestroy {
         id: this.editId,
         lang: this.selectedLanguage,
         text: raw.text,
-        options: raw.options.map((o: any, i: number) => ({
+        options: raw.options.map((o: any) => ({
           id: o.id ?? null,
           text: o.text,
-          order: i + 1,
         })),
       };
       this.store.dispatch(updateSurvey({ id: this.editId, payload }));

@@ -31,9 +31,9 @@ export const getLanguages = createAction('[Subscription] Get Languages');
 export const getLanguagesSuccess = createAction('[Subscription] Get Languages Success', props<{ languages: any }>());
 export const getLanguagesFailure = createAction('[Subscription] Get Languages Failure', props<{ error: any }>());
 
-export const translateToAllLanguages = createAction('[Subscription] Translate To All Languages', props<{ id: any }>());
-export const translateToAllLanguagesSuccess = createAction('[Subscription] Translate To All Languages Success', props<{ success: any }>());
-export const translateToAllLanguagesFailure = createAction('[Subscription] Translate To All Languages Failure', props<{ error: any }>());
+export const translateSubscription = createAction('[Subscription] Translate Subscription', props<{ id: any; lang: string }>());
+export const translateSubscriptionSuccess = createAction('[Subscription] Translate Subscription Success', props<{ success: any }>());
+export const translateSubscriptionFailure = createAction('[Subscription] Translate Subscription Failure', props<{ error: any }>());
 
 export const SubscriptionActions = createActionGroup({
   source: 'Subscription',

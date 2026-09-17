@@ -24,9 +24,9 @@ import {
   getLanguages,
   getLanguagesSuccess,
   getLanguagesFailure,
-  translateToAllLanguages,
-  translateToAllLanguagesSuccess,
-  translateToAllLanguagesFailure
+  translateSubscription,
+  translateSubscriptionSuccess,
+  translateSubscriptionFailure
 } from './subscription.actions';
 import { SubscriptionService } from '../../pages/subscription/subscription.service';
 import { ToastrService } from 'ngx-toastr';
@@ -353,32 +353,30 @@ export class SubscriptionEffects {
     ), { dispatch: false }
   );
 
-  translateToAllLanguages$ = createEffect(() => {
+  translateSubscription$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(translateToAllLanguages),
+      ofType(translateSubscription),
       concatMap((action: any) => {
         const token = localStorage.getItem('token') || '';
         const id = action && action.id ? action.id : null;
+        const lang = action && action.lang ? action.lang : '';
 
-        return this.subscriptionService.translateToAllLanguages(token, id).pipe(
-          switchMap((res: any) => {
-            const languages = Array.isArray(res) ? res : res?.data ?? res?.languages ?? [];
-            return [
-              translateToAllLanguagesSuccess({ success: languages })
-            ];
-          }),
-          catchError((error) => of(translateToAllLanguagesFailure({ error: this.getEffectErrorMessage(error) })))
+        return this.subscriptionService.translateSubscription(token, id, lang).pipe(
+          switchMap((res: any) => [
+            translateSubscriptionSuccess({ success: res })
+          ]),
+          catchError((error) => of(translateSubscriptionFailure({ error: this.getEffectErrorMessage(error) })))
         );
       })
     );
   });
 
-  translateToAllLanguagesSuccess$ = createEffect(() =>
+  translateSubscriptionSuccess$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(translateToAllLanguagesSuccess),
-      tap((action: any) => {
+      ofType(translateSubscriptionSuccess),
+      tap(() => {
         try {
-          this.toastr.success('Translated to all languages successfully', 'Success');
+          this.toastr.success('Subscription translated successfully', 'Success');
         } catch (e) {
           console.error(e);
         }
@@ -387,12 +385,12 @@ export class SubscriptionEffects {
     { dispatch: false }
   );
 
-  translateToAllLanguagesFailure$ = createEffect(() =>
+  translateSubscriptionFailure$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(translateToAllLanguagesFailure),
+      ofType(translateSubscriptionFailure),
       tap((action: any) => {
         try {
-          this.toastr.error(action.error || 'Failed to translate all languages', 'Error');
+          this.toastr.error(action.error || 'Failed to translate subscription', 'Error');
         } catch (e) { }
       })
     ), { dispatch: false }

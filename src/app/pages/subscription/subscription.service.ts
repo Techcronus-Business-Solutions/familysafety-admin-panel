@@ -139,9 +139,10 @@ export class SubscriptionService {
     );
   }
 
-  translateToAllLanguages(token: string, id: any): Observable<any> {
-    const url = API_URL + `subscriptions/translate/${id}/`;
-    return this.http.post<any>(url, {}, this.createHeaders(token)).pipe(
+  translateSubscription(token: string, id: any, lang: string): Observable<any> {
+    const url = API_URL + `subscriptions/${id}/translate/`;
+    const params = new HttpParams().set('lang', lang);
+    return this.http.post<any>(url, {}, { ...this.createHeaders(token), params }).pipe(
       map((response: any) => this.handleApiResponse(response, 200)),
       catchError((error: any) => this.handleError(error))
     );

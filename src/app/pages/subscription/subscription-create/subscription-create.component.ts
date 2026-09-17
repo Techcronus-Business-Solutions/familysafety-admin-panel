@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Actions, ofType } from '@ngrx/effects';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { createSubscription, createSubscriptionSuccess, createSubscriptionFailure } from 'src/app/store/Subscription/subscription.actions';
@@ -25,7 +26,7 @@ export class SubscriptionCreateComponent implements OnInit, OnDestroy {
   pageSize = 10;
   searchTerm = '';
 
-  constructor(public store: Store, private fb: FormBuilder, private actions$: Actions, private listState: ListStateService) { }
+  constructor(public store: Store, private fb: FormBuilder, private actions$: Actions, private listState: ListStateService, private router: Router) { }
 
   ngOnInit(): void {
     this.actions$.pipe(
@@ -118,6 +119,10 @@ export class SubscriptionCreateComponent implements OnInit, OnDestroy {
   // Removes the specific row index clicked
   removeFeature(index: number): void {
     this.features.removeAt(index);
+  }
+
+  goBack(): void {
+    this.router.navigate(['/subscription']);
   }
 
   ngOnDestroy(): void {

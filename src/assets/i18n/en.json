@@ -75,6 +75,21 @@
         "SURVEY": "Survey Questions"
       }
     },
+    "TERMSCONDITIONS": {
+      "LIST": {
+        "TERMSCONDITIONS": "Terms & Conditions"
+      }
+    },
+    "PRIVACYPOLICY": {
+      "LIST": {
+        "PRIVACYPOLICY": "Privacy Policy"
+      }
+    },
+    "REFERRALTERMSCONDITIONS": {
+      "LIST": {
+        "REFERRALTERMSCONDITIONS": "Referral Terms & Conditions"
+      }
+    },
     "GROUP": {
       "LIST": {
         "GROUP": "Groups"

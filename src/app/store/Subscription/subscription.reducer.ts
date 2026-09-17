@@ -21,9 +21,9 @@ import {
   statusChangeFailure,
   statusChangeSuccess,
   SubscriptionActions,
-  translateToAllLanguages,
-  translateToAllLanguagesFailure,
-  translateToAllLanguagesSuccess,
+  translateSubscription,
+  translateSubscriptionFailure,
+  translateSubscriptionSuccess,
   updateSubscription,
   updateSubscriptionFailure,
   updateSubscriptionSuccess
@@ -60,7 +60,7 @@ export const reducer = createReducer(
     updateSubscription,
     deleteSubscription,
     getLanguages,
-    translateToAllLanguages,
+    translateSubscription,
     SubscriptionActions.updateSubscription,
     (state) => ({
     ...state,
@@ -85,7 +85,7 @@ export const reducer = createReducer(
     updateSubscriptionFailure,
     deleteSubscriptionFailure,
     getLanguagesFailure,
-    translateToAllLanguagesFailure,
+    translateSubscriptionFailure,
     SubscriptionActions.updateSubscriptionFailure,
     (state, action) => ({
     ...state,
@@ -99,7 +99,7 @@ export const reducer = createReducer(
     createSubscriptionSuccess,
     updateSubscriptionSuccess,
     getLanguagesSuccess,
-    translateToAllLanguagesSuccess,
+    translateSubscriptionSuccess,
     (state) => ({
       ...state,
       loading: false,

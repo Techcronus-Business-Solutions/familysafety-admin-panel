@@ -1,21 +1,21 @@
 <div class="card">
-  <div class="card-header">
+  <div class="card-header d-flex align-items-center justify-content-between">
     <h4 class="card-title mb-0">Edit Subscription</h4>
+    <button type="button" class="btn btn-light" (click)="goBack()">
+      <i class="ri-arrow-left-line me-1"></i> Back
+    </button>
   </div>
   <div class="card-body">
     <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
       <div class="row">
         <div class="col-md-12 mb-3">
-          <label class="form-label d-block">Language</label>
-          <div class="d-flex gap-3 flex-wrap">
-            <div class="form-check" *ngFor="let lang of languages">
-              <input class="form-check-input" [id]="'lang-' + (lang.code || lang.id)" type="radio" name="lang"
-                [value]="lang.code || lang.id" [checked]="selectedLanguage == (lang.code || lang.id)"
-                (change)="onLanguageChange(lang.code || lang.id)">
-              <label class="form-check-label" [for]="'lang-' + (lang.code || lang.id)">{{ lang.name ||
-                lang.language_name }}</label>
-            </div>
-          </div>
+          <label class="form-label d-block" for="lang-select">Language</label>
+          <select class="form-select w-auto" id="lang-select" name="lang"
+            [ngModel]="selectedLanguage" [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onLanguageChange($event)">
+            <option *ngFor="let lang of languages" [value]="lang.code || lang.id">{{ lang.name ||
+              lang.language_name }}</option>
+          </select>
         </div>
       </div>
       <div class="row">
@@ -164,11 +164,11 @@
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
           Update Subscription
         </button>
-        <!-- <button class="btn btn-primary" type="button" *ngIf="selectedLanguage == `en`"
-          (click)="translateToAllLanguages()" [disabled]="loading">
-          <span *ngIf=" loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          Translate to all languages
-        </button> -->
+        <button class="btn btn-info" type="button" *ngIf="selectedLanguage !== 'en'"
+          (click)="translateSubscription()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Translate
+        </button>
       </div>
 
     </form>

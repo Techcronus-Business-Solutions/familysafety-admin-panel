@@ -75,6 +75,10 @@ export class IndexComponent implements AfterViewInit {
 
   constructor(public store: Store) { }
 
+  hasPieData(chart: any): boolean {
+    return Array.isArray(chart?.series) && chart.series.some((value: number) => Number(value) > 0);
+  }
+
   ngAfterViewInit(): void {
     this._applyCountryChartTooltips();
     this._applyMarketOverviewTooltip();
