@@ -10,12 +10,24 @@
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Force Update Version <span class="text-danger">*</span></label>
-          <input class="form-control" formControlName="iosForceUpdateVersion" placeholder="e.g. 1.0.1">
+          <input class="form-control" formControlName="iosForceUpdateVersion" placeholder="e.g. 1.0.1"
+            maxlength="10" (input)="restrictToVersionChars($event, 'iosForceUpdateVersion')"
+            [ngClass]="{'is-invalid': isInvalid('iosForceUpdateVersion')}">
+          <div class="invalid-feedback" *ngIf="isInvalid('iosForceUpdateVersion')">
+            <span *ngIf="hasError('iosForceUpdateVersion', 'required')">Force update version is required.</span>
+            <span *ngIf="hasError('iosForceUpdateVersion', 'pattern')">Format must be like 0.0.1 (numbers and dots only).</span>
+          </div>
         </div>
         <div class="col-md-6 mb-3">
           <label class="form-label">Force Update Build <span class="text-danger">*</span></label>
-          <input class="form-control" type="number" min="0" formControlName="iosForceUpdateBuild"
-            placeholder="e.g. 3">
+          <input class="form-control" type="text" inputmode="numeric" maxlength="10"
+            formControlName="iosForceUpdateBuild" placeholder="e.g. 3"
+            (input)="restrictToDigits($event, 'iosForceUpdateBuild')"
+            [ngClass]="{'is-invalid': isInvalid('iosForceUpdateBuild')}">
+          <div class="invalid-feedback" *ngIf="isInvalid('iosForceUpdateBuild')">
+            <span *ngIf="hasError('iosForceUpdateBuild', 'required')">Force update build is required.</span>
+            <span *ngIf="hasError('iosForceUpdateBuild', 'pattern')">Only numbers are allowed.</span>
+          </div>
         </div>
       </div>
 
@@ -23,12 +35,24 @@
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Force Update Version <span class="text-danger">*</span></label>
-          <input class="form-control" formControlName="androidForceUpdateVersion" placeholder="e.g. 1.2.0">
+          <input class="form-control" formControlName="androidForceUpdateVersion" placeholder="e.g. 1.2.0"
+            maxlength="10" (input)="restrictToVersionChars($event, 'androidForceUpdateVersion')"
+            [ngClass]="{'is-invalid': isInvalid('androidForceUpdateVersion')}">
+          <div class="invalid-feedback" *ngIf="isInvalid('androidForceUpdateVersion')">
+            <span *ngIf="hasError('androidForceUpdateVersion', 'required')">Force update version is required.</span>
+            <span *ngIf="hasError('androidForceUpdateVersion', 'pattern')">Format must be like 0.0.1 (numbers and dots only).</span>
+          </div>
         </div>
         <div class="col-md-6 mb-3">
           <label class="form-label">Force Update Build <span class="text-danger">*</span></label>
-          <input class="form-control" type="number" min="0" formControlName="androidForceUpdateBuild"
-            placeholder="e.g. 2">
+          <input class="form-control" type="text" inputmode="numeric" maxlength="10"
+            formControlName="androidForceUpdateBuild" placeholder="e.g. 2"
+            (input)="restrictToDigits($event, 'androidForceUpdateBuild')"
+            [ngClass]="{'is-invalid': isInvalid('androidForceUpdateBuild')}">
+          <div class="invalid-feedback" *ngIf="isInvalid('androidForceUpdateBuild')">
+            <span *ngIf="hasError('androidForceUpdateBuild', 'required')">Force update build is required.</span>
+            <span *ngIf="hasError('androidForceUpdateBuild', 'pattern')">Only numbers are allowed.</span>
+          </div>
         </div>
       </div>
 
