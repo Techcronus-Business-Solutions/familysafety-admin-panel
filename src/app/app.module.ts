@@ -57,6 +57,7 @@ import { SurveyEffects } from './store/Survey/survey.effects';
 import { TermsConditionsEffects } from './store/TermsConditions/terms-conditions.effects';
 import { PrivacyPolicyEffects } from './store/PrivacyPolicy/privacy-policy.effects';
 import { ReferralTermsConditionsEffects } from './store/ReferralTermsConditions/referral-terms-conditions.effects';
+import { AppVersionEffects } from './store/AppVersion/app-version.effects';
 import { SubscriptionSummaryComponent } from './pages/dashboards/index/subscription-summary.component';
 
 export function createTranslateLoader(http: HttpClient): any {
@@ -116,7 +117,8 @@ if (environment.defaultauth === 'firebase') {
       SurveyEffects,
       TermsConditionsEffects,
       PrivacyPolicyEffects,
-      ReferralTermsConditionsEffects
+      ReferralTermsConditionsEffects,
+      AppVersionEffects
     ]),
     AngularFireModule.initializeApp(environment.firebaseConfig),
     BrowserModule,

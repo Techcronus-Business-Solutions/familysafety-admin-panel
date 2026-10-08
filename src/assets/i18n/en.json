@@ -90,6 +90,11 @@
         "REFERRALTERMSCONDITIONS": "Referral Terms & Conditions"
       }
     },
+    "APPVERSION": {
+      "LIST": {
+        "APPVERSION": "App Version"
+      }
+    },
     "GROUP": {
       "LIST": {
         "GROUP": "Groups"

@@ -8,6 +8,7 @@ import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import Swal from 'sweetalert2';
 import { MonitoringActions } from 'src/app/store/Monitoring/monitoring.actions';
 import {
   selectPaymentHistory,
@@ -197,6 +198,23 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
 
   openUserInNewTab(id: any): void {
     if (id) { window.open('/users/' + id, '_blank'); }
+  }
+
+  onUserNameClick(user: any): void {
+    if (!user) {
+      return;
+    }
+    if (user.id) {
+      this.openUserInNewTab(user.id);
+      return;
+    }
+    Swal.fire({
+      title: 'User Deleted',
+      text: 'This user account has been deleted and is no longer available.',
+      icon: 'info',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'OK'
+    });
   }
 
   getRowNumber(index: number): number {

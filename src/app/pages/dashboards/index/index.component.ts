@@ -79,6 +79,12 @@ export class IndexComponent implements AfterViewInit {
     return Array.isArray(chart?.series) && chart.series.some((value: number) => Number(value) > 0);
   }
 
+  hasSeriesData(chart: any): boolean {
+    return Array.isArray(chart?.series) && chart.series.some((s: any) =>
+      Array.isArray(s?.data) && s.data.some((value: number) => Number(value) > 0)
+    );
+  }
+
   ngAfterViewInit(): void {
     this._applyCountryChartTooltips();
     this._applyMarketOverviewTooltip();

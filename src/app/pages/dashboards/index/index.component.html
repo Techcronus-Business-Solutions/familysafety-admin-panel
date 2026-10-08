@@ -221,7 +221,7 @@
                             }
                         </tbody><!-- end tbody -->
                     </table><!-- end table -->
-                    <div class="noresult" *ngIf="dashboardData && recentTransactions.length === 0">
+                    <div class="noresult" *ngIf="recentTransactions.length === 0">
                         <div class="text-center">
                             <i class="ri-search-line fs-1 text-muted d-block mb-2"></i>
                             <h5 class="mt-2">No Data Found</h5>
@@ -271,6 +271,12 @@
                             }
                         </tbody>
                     </table>
+                    <div class="noresult" *ngIf="recentUsers.length === 0">
+                        <div class="text-center">
+                            <i class="ri-search-line fs-1 text-muted d-block mb-2"></i>
+                            <h5 class="mt-2">No Data Found</h5>
+                        </div>
+                    </div>
                 </ngx-simplebar>
             </div>
         </div>
@@ -290,6 +296,7 @@
                     </div><!-- end card header -->
                     <div class="card-body ps-0">
                         <div class="w-100">
+                            @if (hasSeriesData(marketverviewChart)) {
                             <div id="market-overview" class="apex-charts" dir="ltr">
                                 <apx-chart #marketOverviewChart [series]="marketverviewChart.series"
                                     [chart]="marketverviewChart.chart" [plotOptions]="marketverviewChart.plotOptions"
@@ -299,6 +306,14 @@
                                     [grid]="marketverviewChart.grid" [yaxis]="marketverviewChart.yaxis"
                                     [states]="marketverviewChart.states" dir="ltr"></apx-chart>
                             </div>
+                            } @else {
+                            <div class="noresult chart-empty" style="height: 328px;">
+                                <div class="text-center">
+                                    <i class="ri-bar-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                                    <h5 class="mt-2">No Data Found</h5>
+                                </div>
+                            </div>
+                            }
                         </div>
                     </div><!-- end card body -->
                 </div>
@@ -423,12 +438,21 @@
                 }
             </div>
             <div class="card-body">
+                @if (hasSeriesData(revenueByYearChart)) {
                 <apx-chart [series]="revenueByYearChart.series" [chart]="revenueByYearChart.chart"
                     [plotOptions]="revenueByYearChart.plotOptions" [dataLabels]="revenueByYearChart.dataLabels"
                     [xaxis]="revenueByYearChart.xaxis" [yaxis]="revenueByYearChart.yaxis"
                     [colors]="revenueByYearChart.colors" [states]="revenueByYearChart.states"
                     [fill]="revenueByYearChart.fill" dir="ltr">
                 </apx-chart>
+                } @else {
+                <div class="noresult chart-empty" style="height: 350px;">
+                    <div class="text-center">
+                        <i class="ri-bar-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -442,6 +466,7 @@
                 }
             </div>
             <div class="card-body p-0 country-chart-card">
+                @if (hasSeriesData(usersByCountryChart)) {
                 <div class="country-chart-scroll">
                     <apx-chart #usersCountryChart [series]="usersByCountryChart.series"
                         [chart]="usersByCountryChart.chart" [plotOptions]="usersByCountryChart.plotOptions"
@@ -455,6 +480,14 @@
                         {{ tick.value }}
                     </span>
                 </div>
+                } @else {
+                <div class="noresult chart-empty" style="height: 350px;">
+                    <div class="text-center">
+                        <i class="ri-bar-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -473,12 +506,21 @@
                 }
             </div>
             <div class="card-body">
+                @if (hasSeriesData(downloadsByMonthChart)) {
                 <apx-chart [series]="downloadsByMonthChart.series" [chart]="downloadsByMonthChart.chart"
                     [plotOptions]="downloadsByMonthChart.plotOptions" [dataLabels]="downloadsByMonthChart.dataLabels"
                     [xaxis]="downloadsByMonthChart.xaxis" [yaxis]="downloadsByMonthChart.yaxis"
                     [colors]="downloadsByMonthChart.colors" [states]="downloadsByMonthChart.states"
                     [fill]="downloadsByMonthChart.fill" dir="ltr">
                 </apx-chart>
+                } @else {
+                <div class="noresult chart-empty" style="height: 350px;">
+                    <div class="text-center">
+                        <i class="ri-bar-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -492,7 +534,7 @@
                 }
             </div>
             <div class="card-body p-0 country-chart-card">
-                @if (downloadsByCountryChart) {
+                @if (hasSeriesData(downloadsByCountryChart)) {
                 <div class="country-chart-scroll">
                     <apx-chart #downloadsCountryChart [series]="downloadsByCountryChart.series"
                         [chart]="downloadsByCountryChart.chart" [plotOptions]="downloadsByCountryChart.plotOptions"
@@ -505,6 +547,13 @@
                     <span *ngFor="let tick of downloadsByCountryAxisTicks" [style.left.%]="tick.position">
                         {{ tick.value }}
                     </span>
+                </div>
+                } @else {
+                <div class="noresult chart-empty" style="height: 350px;">
+                    <div class="text-center">
+                        <i class="ri-bar-chart-2-line fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="mt-2">No Data Found</h5>
+                    </div>
                 </div>
                 }
             </div>

@@ -1,0 +1,94 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { SharedModule } from 'src/app/shared/shared.module';
+import {
+  getAppVersion,
+  getAppVersionSuccess,
+  updateAppVersion,
+  updateAppVersionSuccess,
+} from 'src/app/store/AppVersion/app-version.actions';
+import {
+  selectAppVersionLoading,
+  selectAppVersionSaving,
+} from 'src/app/store/AppVersion/app-version.reducer';
+
+@Component({
+  selector: 'app-app-version',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, SharedModule],
+  templateUrl: './app-version.component.html',
+  styleUrl: './app-version.component.scss',
+})
+export class AppVersionComponent implements OnInit, OnDestroy {
+  title = 'App Version';
+  breadCrumbItems: Array<{ label: string; active?: boolean }> = [
+    { label: 'Dashboard' },
+    { label: 'App Version', active: true }
+  ];
+
+  editForm!: FormGroup;
+  loading = false;
+  saving = false;
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private fb: FormBuilder,
+    private store: Store,
+    private actions$: Actions
+  ) { }
+
+  ngOnInit(): void {
+    this.editForm = this.fb.group({
+      iosForceUpdateVersion: ['', Validators.required],
+      iosForceUpdateBuild: [null, [Validators.required, Validators.min(0)]],
+      androidForceUpdateVersion: ['', Validators.required],
+      androidForceUpdateBuild: [null, [Validators.required, Validators.min(0)]],
+    });
+
+    this.store.select(selectAppVersionLoading).pipe(takeUntil(this.destroy$)).subscribe(loading => this.loading = loading);
+    this.store.select(selectAppVersionSaving).pipe(takeUntil(this.destroy$)).subscribe(saving => this.saving = saving);
+
+    this.actions$.pipe(
+      ofType(getAppVersionSuccess, updateAppVersionSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe((action) => {
+      const config = action.config ?? {};
+      this.editForm.patchValue({
+        iosForceUpdateVersion: config.ios_force_update_version ?? '',
+        iosForceUpdateBuild: config.ios_force_update_build ?? null,
+        androidForceUpdateVersion: config.android_force_update_version ?? '',
+        androidForceUpdateBuild: config.android_force_update_build ?? null,
+      });
+    });
+
+    this.store.dispatch(getAppVersion());
+  }
+
+  onSubmit(): void {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.editForm.value;
+    const payload = {
+      ios_force_update_version: value.iosForceUpdateVersion,
+      ios_force_update_build: value.iosForceUpdateBuild,
+      android_force_update_version: value.androidForceUpdateVersion,
+      android_force_update_build: value.androidForceUpdateBuild,
+    };
+
+    this.store.dispatch(updateAppVersion({ payload }));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}

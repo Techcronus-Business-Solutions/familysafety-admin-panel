@@ -109,7 +109,7 @@
               <tbody class="list form-check-all">
                 <tr *ngFor="let item of paymentHistory; let i = index">
                   <td>{{ getRowNumber(i) }}</td>
-                  <td (click)="item.user?.id && openUserInNewTab(item.user.id)" [class.cursor-pointer]="item.user?.id">
+                  <td (click)="onUserNameClick(item.user)" [class.cursor-pointer]="item.user">
                     {{ item.user?.full_name || '-' }}</td>
                   <!-- <td>{{ item.user?.email || '-' }}</td> -->
                   <td>

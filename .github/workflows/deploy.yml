@@ -1,0 +1,86 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, admin]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.vars.outputs.env_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Inject shared secrets into environment files
+        env:
+          DO_SPACES_ACCESS_KEY: ${{ secrets.DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.DO_SPACES_SECRET_KEY }}
+          MAPBOX_PUBLIC_KEY: ${{ secrets.MAPBOX_PUBLIC_KEY }}
+          MAPBOX_SECRET_KEY: ${{ secrets.MAPBOX_SECRET_KEY }}
+        run: node scripts/inject-prod-env.js
+
+      - name: Determine build configuration from branch
+        id: vars
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "configuration=production" >> "$GITHUB_OUTPUT"
+            echo "env_name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "configuration=staging" >> "$GITHUB_OUTPUT"
+            echo "env_name=staging" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build bundle
+        run: npm run build -- --configuration ${{ steps.vars.outputs.configuration }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/steex
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ needs.build.outputs.env_name }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/steex
+
+      - name: Deploy to VPS via rsync
+        uses: easingthemes/ssh-deploy@v5
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.VPS_HOST }}
+          REMOTE_USER: ${{ secrets.VPS_USER }}
+          REMOTE_PORT: ${{ secrets.VPS_PORT || 22 }}
+          SOURCE: 'dist/steex/'
+          TARGET: '/var/www/html/'
+          ARGS: '-rltgoDzvO --delete'
+
+      # Uncomment if nginx config or server state needs a reload after deploy
+      # (usually NOT required for plain static file updates).
+      # - name: Reload nginx
+      #   uses: appleboy/ssh-action@v1
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.VPS_SSH_KEY }}
+      #     port: ${{ secrets.VPS_PORT || 22 }}
+      #     script: sudo systemctl reload nginx

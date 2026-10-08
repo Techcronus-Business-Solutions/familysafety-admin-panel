@@ -94,6 +94,13 @@ export const MENU: MenuItem[] = [
         parentId: 1
     },
     {
+        id: 187,
+        label: 'MENUITEMS.APPVERSION.LIST.APPVERSION',
+        icon: 'ph-device-mobile',
+        link: '/app-version',
+        parentId: 1
+    },
+    {
         id: 178,
         label: 'MENUITEMS.MONITORING.TEXT',
         isTitle: true

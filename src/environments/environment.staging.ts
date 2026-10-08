@@ -3,9 +3,9 @@ export const environment = {
   defaultauth: 'fakebackend',
   mapboxToken: '',
 
-  apiUrl: 'https://api.angelprotect-app.com/api/admin/',
-  authApi: 'https://api.angelprotect-app.com/api/admin/',
-  wsSosLocation: 'wss://api.angelprotect-app.com/ws/admin/location/',
+  apiUrl: 'https://stagingapi.angelprotect-app.com/api/admin/',
+  authApi: 'https://stagingapi.angelprotect-app.com/api/admin/',
+  wsSosLocation: 'wss://stagingapi.angelprotect-app.com/ws/admin/location/',
 
   firebaseConfig: {
     apiKey: '',

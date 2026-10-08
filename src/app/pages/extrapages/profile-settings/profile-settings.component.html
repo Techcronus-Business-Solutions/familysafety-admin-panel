@@ -196,7 +196,7 @@
                                         <div class="mb-3">
                                             <label for="email" class="form-label">Email Address</label>
                                             <input type="email" class="form-control" id="email"
-                                                placeholder="Enter your email" formControlName="email"
+                                                placeholder="Enter your email" formControlName="email" readonly
                                                 [ngClass]="{'is-invalid': isInvalid(profileUpdateForm, 'email')}">
                                             <div class="invalid-feedback" *ngIf="isInvalid(profileUpdateForm, 'email')">
                                                 <span *ngIf="hasError(profileUpdateForm, 'email', 'required')">
@@ -209,13 +209,13 @@
                                         </div>
                                     </div>
                                     <!--end col-->
-                                    <div class="col-lg-6">
+                                    <!-- <div class="col-lg-6">
                                         <div class="mb-3">
                                             <label for="date_of_birth" class="form-label">Date of Birth</label>
                                             <input type="date" class="form-control" id="date_of_birth"
                                                 placeholder="Enter your date of birth" formControlName="date_of_birth">
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <!--end col-->
                                     <div class="col-lg-12">
                                         <div class="hstack gap-2 justify-content-end">

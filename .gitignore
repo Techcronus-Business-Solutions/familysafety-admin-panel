@@ -42,4 +42,7 @@ testem.log
 .DS_Store
 Thumbs.db
 
-/src/environments
+# Local dev environment config (machine-specific, may hold local secrets) - never commit.
+# environment.prod.ts and environment.staging.ts ARE committed: they only hold safe
+# placeholder tokens, with real values injected by CI from GitHub Secrets at build time.
+/src/environments/environment.ts

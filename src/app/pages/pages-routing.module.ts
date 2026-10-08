@@ -30,6 +30,9 @@ const routes: Routes = [
     path: 'referral-terms-conditions-management', loadChildren: () => import('./referral-terms-conditions-management/referral-terms-conditions-management.module').then(m => m.ReferralTermsConditionsManagementModule)
   },
   {
+    path: 'app-version', loadChildren: () => import('./app-version/app-version.module').then(m => m.AppVersionModule)
+  },
+  {
     path: 'group', loadChildren: () => import('./group/group.module').then(m => m.GroupModule)
   },
   {

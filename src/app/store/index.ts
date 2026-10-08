@@ -27,6 +27,7 @@ import { surveyReducer, SurveyState } from './Survey/survey.reducer';
 import { termsConditionsReducer, TermsConditionsState } from './TermsConditions/terms-conditions.reducer';
 import { privacyPolicyReducer, PrivacyPolicyState } from './PrivacyPolicy/privacy-policy.reducer';
 import { referralTermsConditionsReducer, ReferralTermsConditionsState } from './ReferralTermsConditions/referral-terms-conditions.reducer';
+import { appVersionReducer, AppVersionState } from './AppVersion/app-version.reducer';
 
 
 export interface RootReducerState {
@@ -59,6 +60,7 @@ export interface RootReducerState {
     termsConditions: TermsConditionsState;
     privacyPolicy: PrivacyPolicyState;
     referralTermsConditions: ReferralTermsConditionsState;
+    appVersion: AppVersionState;
 }
 
 export const rootReducer: ActionReducerMap<RootReducerState> = {
@@ -91,4 +93,5 @@ export const rootReducer: ActionReducerMap<RootReducerState> = {
     termsConditions: termsConditionsReducer,
     privacyPolicy: privacyPolicyReducer,
     referralTermsConditions: referralTermsConditionsReducer,
+    appVersion: appVersionReducer,
 }
