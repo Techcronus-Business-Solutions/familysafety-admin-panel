@@ -73,6 +73,8 @@ jobs:
           SOURCE: 'dist/steex/'
           TARGET: '/var/www/html/'
           ARGS: '-rltgoDzvO --delete'
+          # Server-managed .htaccess must survive --delete (not part of the build output)
+          EXCLUDE: '/.htaccess'
 
       # Uncomment if nginx config or server state needs a reload after deploy
       # (usually NOT required for plain static file updates).

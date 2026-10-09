@@ -8,6 +8,8 @@ import { Actions, ofType } from '@ngrx/effects';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { ProfileSettingsService } from './profile-settings.service';
+import { CountryISO, SearchCountryField } from 'ngx-intl-tel-input';
+import { toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
 
 @Component({
   selector: 'app-profile-settings',
@@ -36,6 +38,8 @@ export class ProfileSettingsComponent implements OnDestroy {
   private actionsSubscription?: Subscription;
 
   userData: any;
+  readonly CountryISO = CountryISO;
+  readonly SearchCountryField = SearchCountryField;
 
   constructor(private route: ActivatedRoute, private fb: FormBuilder, private store: Store, private actions$: Actions, private router: Router, private toastr: ToastrService, private profileSettingsService: ProfileSettingsService) { }
 
@@ -58,7 +62,7 @@ export class ProfileSettingsComponent implements OnDestroy {
     this.profileUpdateForm = this.fb.group({
       full_name: [this.userData.full_name, Validators.required],
       email: [this.userData.email, [Validators.required, Validators.email]],
-      phone_number: [this.userData.phone_number, Validators.required],
+      phone_number: [toNgxIntlTelInputValue(this.userData.phone_number), Validators.required],
       date_of_birth: [this.userData.date_of_birth],
     });
 
@@ -155,7 +159,11 @@ export class ProfileSettingsComponent implements OnDestroy {
       this.profileUpdateForm.markAllAsTouched();
       return;
     }
-    const changes = this.profileUpdateForm.value;
+    const phoneValue = this.profileUpdateForm.value.phone_number;
+    const changes = {
+      ...this.profileUpdateForm.value,
+      phone_number: phoneValue && typeof phoneValue === 'object' ? phoneValue.e164Number : phoneValue,
+    };
     this.loading = true;
     // Pass user id and changes as expected by effect/service
     this.store.dispatch(updateProfile({ userDetails: changes }));

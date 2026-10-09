@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -9,11 +10,12 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { loadUser, updateUser, updateUserSuccess, updateUserFailure } from '../../../store/Users/user.actions';
 import { selectEntities } from '../../../store/Users/user.reducer';
+import { COUNTRY_CODES, DEFAULT_COUNTRY_CODE, splitPhoneNumber } from 'src/app/shared/data/country-codes';
 
 @Component({
   selector: 'app-user-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './user-edit.component.html',
   styleUrls: ['./user-edit.component.scss'],
 })
@@ -21,6 +23,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   userId!: number;
   loading = false;
+  countryCodes = COUNTRY_CODES;
   private destroy$ = new Subject<void>();
 
   constructor(private route: ActivatedRoute, private fb: FormBuilder, private store: Store, private actions$: Actions, private router: Router) { }
@@ -29,6 +32,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       full_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      country_code: [DEFAULT_COUNTRY_CODE],
       phone_number: [''],
       date_of_birth: [''],
       is_minor: [false],
@@ -50,10 +54,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
     ).subscribe((entities: any) => {
       const user = entities && entities[this.userId] ? entities[this.userId] : null;
       if (user) {
+        const { dialCode, number } = splitPhoneNumber(user.phone_number);
         this.form.patchValue({
           full_name: user.full_name,
           email: user.email,
-          phone_number: user.phone_number,
+          country_code: dialCode || DEFAULT_COUNTRY_CODE,
+          phone_number: number,
           date_of_birth: user.date_of_birth,
           is_minor: user.is_minor,
           is_verified: user.is_verified
@@ -68,7 +74,11 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.form.invalid) return;
-    const changes = this.form.value;
+    const changes = {
+      ...this.form.value,
+      phone_number: this.form.value.country_code + this.form.value.phone_number,
+    };
+    delete changes.country_code;
     this.showPreloader();
     this.store.dispatch(updateUser({ id: this.userId, changes }));
   }

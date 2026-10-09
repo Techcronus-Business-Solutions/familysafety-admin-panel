@@ -6,18 +6,23 @@ import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { NgxIntlTelInputModule, CountryISO, SearchCountryField } from 'ngx-intl-tel-input';
 import { loadUser, updateUser, updateUserSuccess, updateUserFailure } from '../../../store/Users/user.actions';
 import { selectEntities } from '../../../store/Users/user.reducer';
 import { UserService } from '../user.service';
+import { toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
 
 @Component({
   selector: 'app-user-details',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, BsDropdownModule, NgxIntlTelInputModule],
   templateUrl: './user-details.component.html',
   styleUrl: './user-details.component.scss',
 })
 export class UserDetailsComponent implements OnInit, OnDestroy {
+  readonly CountryISO = CountryISO;
+  readonly SearchCountryField = SearchCountryField;
   userdetails: any = null;
   subscriptionDetails: any = null;
   referralDetails: any = null;
@@ -86,7 +91,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.form.patchValue({
       full_name: user.full_name,
       email: user.email,
-      phone_number: user.phone_number,
+      phone_number: toNgxIntlTelInputValue(user.phone_number),
       date_of_birth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().substring(0, 10) : '',
       is_minor: user.is_minor
     });
@@ -95,7 +100,11 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    const changes = this.form.value;
+    const phoneValue = this.form.value.phone_number;
+    const changes = {
+      ...this.form.value,
+      phone_number: phoneValue && typeof phoneValue === 'object' ? phoneValue.e164Number : phoneValue,
+    };
     this.showPreloader();
     this.store.dispatch(updateUser({ id: this.userId, changes }));
   }

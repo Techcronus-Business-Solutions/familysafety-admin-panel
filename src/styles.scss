@@ -9,6 +9,9 @@
 /* Importing Select SCSS file. */
 @import "@ng-select/ng-select/themes/default.theme.css";
 
+/* Importing Intl Tel Input (country code phone input) CSS file. */
+@import "intl-tel-input/build/css/intlTelInput.css";
+
 .emoji-mart {
   position: absolute;
   bottom: 30px;
@@ -422,3 +425,43 @@ bs-dropdown-container {
 }
 
 .cursor-pointer { cursor: pointer; }
+
+// Country code + phone number joined control (profile settings, user edit)
+.phone-input-group {
+  display: flex;
+
+  .country-code-select {
+    width: 90px;
+    flex-shrink: 0;
+
+    .ng-select-container {
+      height: 39px !important;
+      min-height: 39px !important;
+      border-top-right-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      border-right: 0 !important;
+    }
+  }
+
+  .form-control {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+}
+
+// ngx-intl-tel-input: library's base CSS leaves .iti as inline-block with no
+// width, so it doesn't stretch to match sibling .form-control fields, and its
+// country list has no max-height/scroll in the ngx-bootstrap dropdown path.
+.iti {
+  width: 100%;
+  display: block;
+}
+
+.iti input.iti__tel-input {
+  width: 100%;
+}
+
+.iti__dropdown-content .iti__country-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
