@@ -19,6 +19,15 @@ import { InstructorReducer, InstructorState } from "./Learning-instructor/instru
 import { CustomerReducer, CustomerState } from "./Customer/customer.reducer";
 import { StudentsReducer, studentState } from "./students/student.reducer";
 import { CourcesReducer, CourcesState } from "./Learning-cources/cources.reducer";
+import { userReducer, UserState } from './Users/user.reducer';
+import { subscriptionReducer, SubscriptionState } from './Subscription/subscription.reducer';
+import { dashboardReducer, DashboardState } from './Dashboard/dashboard.reducer';
+import { reducer as monitoringReducer, State as MonitoringState } from './Monitoring/monitoring.reducer';
+import { surveyReducer, SurveyState } from './Survey/survey.reducer';
+import { termsConditionsReducer, TermsConditionsState } from './TermsConditions/terms-conditions.reducer';
+import { privacyPolicyReducer, PrivacyPolicyState } from './PrivacyPolicy/privacy-policy.reducer';
+import { referralTermsConditionsReducer, ReferralTermsConditionsState } from './ReferralTermsConditions/referral-terms-conditions.reducer';
+import { appVersionReducer, AppVersionState } from './AppVersion/app-version.reducer';
 
 
 export interface RootReducerState {
@@ -42,7 +51,16 @@ export interface RootReducerState {
     CustomerList: CustomerState;
     SubscriptionList: studentState;
     CourcesList: CourcesState;
-    Instructorlist: InstructorState
+    Instructorlist: InstructorState;
+    users: UserState;
+    subscriptions: SubscriptionState;
+    dashboard: DashboardState;
+    monitorings: MonitoringState;
+    survey: SurveyState;
+    termsConditions: TermsConditionsState;
+    privacyPolicy: PrivacyPolicyState;
+    referralTermsConditions: ReferralTermsConditionsState;
+    appVersion: AppVersionState;
 }
 
 export const rootReducer: ActionReducerMap<RootReducerState> = {
@@ -66,5 +84,14 @@ export const rootReducer: ActionReducerMap<RootReducerState> = {
     CustomerList: CustomerReducer,
     SubscriptionList: StudentsReducer,
     CourcesList: CourcesReducer,
-    Instructorlist: InstructorReducer
+    Instructorlist: InstructorReducer,
+    users: userReducer,
+    subscriptions: subscriptionReducer,
+    dashboard: dashboardReducer,
+    monitorings: monitoringReducer,
+    survey: surveyReducer,
+    termsConditions: termsConditionsReducer,
+    privacyPolicy: privacyPolicyReducer,
+    referralTermsConditions: referralTermsConditionsReducer,
+    appVersion: appVersionReducer,
 }

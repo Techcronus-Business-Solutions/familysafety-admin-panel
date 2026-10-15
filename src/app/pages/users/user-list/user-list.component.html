@@ -1,0 +1,192 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Users" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body">
+        <div id="customerList">
+          <div class="row g-4 mb-3 user-filter-bar">
+            <div class="col-sm-auto">
+            </div>
+            <div class="col-sm d-flex justify-content-between align-items-center gap-2">
+              <div class="d-flex justify-content-sm-start align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <label class="mb-0 item-per-page-label" for="pageSizeSelect">Show</label>
+                  <select id="pageSizeSelect" #pageSizeSelect class="form-select form-select-sm" [value]="pageSize"
+                    (change)="onPageSizeChange(pageSizeSelect.value)">
+                    <option *ngFor="let size of pageSizeOptions" [value]="size" [selected]="size === pageSize">
+                      {{ size }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="d-flex justify-content-sm-end align-items-center gap-2 flex-wrap">
+                <div class="d-flex align-items-center gap-1">
+                  <label class="mb-0 text-nowrap">Minor</label>
+                  <select title="Filter by Minor" class="form-select form-select-sm" [(ngModel)]="isMinor"
+                    (change)="onFilterChange()">
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                  <label class="mb-0 text-nowrap">Status</label>
+                  <select title="Filter by Status" class="form-select form-select-sm" [(ngModel)]="statusFilter"
+                    (change)="onFilterChange()">
+                    <option value="">All</option>
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+                </div>
+                <div class="search-box d-flex align-items-center">
+                  <input type="text" class="form-control search" placeholder="Search..." [(ngModel)]="term"
+                    (input)="onSearchInput()">
+                  <i class="ri-search-line search-icon ms-2"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive table-card mt-3 mb-1">
+            <table class="table align-middle table-nowrap user-table" id="customerTable">
+              <thead class="table-light user-table-head">
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('full_name')">
+                    <span class="th-content">
+                      <span>Full Name</span>
+                      <i class="sort-icon" [ngClass]="getSortIcon('full_name')"></i>
+                    </span>
+                  </th>
+                  <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('email')">
+                    <span class="th-content">
+                      <span>Email</span>
+                      <i class="sort-icon" [ngClass]="getSortIcon('email')"></i>
+                    </span>
+                  </th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">
+                    <span class="th-date">
+                      <span>Date of Birth</span>
+                      <small>(DD/MM/YYYY)</small>
+                    </span>
+                  </th>
+                  <th scope="col">Minor</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Suspended By</th>
+                  <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('last_active')">
+                    <span class="th-date-sort">
+                      <span class="th-content">
+                        <span>Last Active</span>
+                        <i class="sort-icon" [ngClass]="getSortIcon('last_active')"></i>
+                      </span>
+                      <small>(DD/MM/YYYY HH:MM)</small>
+                    </span>
+                  </th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody class="list form-check-all">
+                <tr *ngFor="let user of allusers; let i = index" id="u_{{user.id}}" (click)="viewUserDetails(user.id)"
+                  class="clickable-row">
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <!-- {{ getRowNumber(i) }} -->
+                      <ng-container *ngIf="user.profile_picture; else initialsAvatar">
+                        <img [src]="user.profile_picture" alt="{{ user.full_name }}"
+                          class="rounded-circle object-fit-cover" width="36" height="36"
+                          onerror="this.src='assets/images/users/avatar-1.jpg'">
+                      </ng-container>
+                      <ng-template #initialsAvatar>
+                        <div
+                          class="avatar-xs rounded-circle d-flex align-items-center justify-content-center bg-primary text-white fw-bold"
+                          style="width: 36px; height: 36px; font-size: 0.85rem;">
+                          {{ getInitials(user.full_name) }}
+                        </div>
+                      </ng-template>
+                    </div>
+                  </td>
+                  <td class="customer_name">
+                    <span>{{ user.full_name }}</span>
+                  </td>
+                  <td class="email">{{ user.email }}</td>
+                  <td class="phone">{{ user.phone_number }}</td>
+                  <td>{{ user.date_of_birth | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span class="badge text-uppercase"
+                      [ngClass]="{ 'bg-warning-subtle text-warning': user.is_minor, 'bg-secondary-subtle text-secondary': !user.is_minor }">
+                      {{ user.is_minor ? 'Yes' : 'No' }}
+                    </span>
+                  </td>
+                  <td class="status"><span class="badge text-uppercase"
+                      [ngClass]="{'bg-success-subtle text-success' : !user.is_suspended,'bg-danger-subtle text-danger' : user.is_suspended}">
+                      {{ user.is_suspended ? 'Suspended' : 'Active' }}</span>
+                  </td>
+                  <td>{{ user.suspended_by ?? '-' }}</td>
+                  <td>{{ user.last_active ? (user.last_active | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
+                  <td (click)="$event.stopPropagation()" class="actions-cell">
+                    <div class="d-flex gap-2">
+                      <div class="view">
+                        <button class="btn btn-sm btn-primary" [routerLink]="['/users', user.id]" title="View Details">
+                          <i class="ri-eye-line"></i>
+                        </button>
+                      </div>
+                      <div class="delete">
+                        <button class="btn btn-sm btn-danger" title="Delete User" (click)="onDeleteUser(user.id)">
+                          <i class="ri-delete-bin-line"></i>
+                        </button>
+                      </div>
+                      <div class="unsuspend" *ngIf="user.is_suspended">
+                        <button class="btn btn-sm btn-success remove-item-btn"
+                          (click)="userUnsuspend(user.id)">Unsuspend</button>
+                      </div>
+                      <div class="suspend" *ngIf="!user.is_suspended">
+                        <button class="btn btn-sm btn-danger remove-item-btn"
+                          (click)="userSuspend(user.id)">Suspend</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="noresult" [ngClass]="(allusers?.length != 0) || loading ? 'd-none' : ''">
+              <div class="text-center">
+                <i class="ri-search-line fs-1 text-muted d-block mb-2"></i>
+                <h5 class="mt-2">No Data Found</h5>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-2" *ngIf="totalUsers > 0">
+            <div class="text-muted small">
+              Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ currentPage * pageSize > totalUsers ? totalUsers :
+              currentPage * pageSize }} of {{ totalUsers | number }} entries
+            </div>
+            <nav aria-label="User list pagination">
+              <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="currentPage <= 1">
+                  <button class="page-link" (click)="tablepageChanged(currentPage - 1)"
+                    [disabled]="currentPage <= 1">Previous</button>
+                </li>
+                <li class="page-item" *ngFor="let p of [].constructor(totalPages); let idx = index"
+                  [class.active]="(idx+1) === currentPage">
+                  <button class="page-link" (click)="tablepageChanged(idx+1)">{{ idx + 1 }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage >= totalPages">
+                  <button class="page-link" (click)="tablepageChanged(currentPage + 1)"
+                    [disabled]="currentPage >= totalPages">Next</button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div><!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end col -->
+</div>
+<!-- end row -->

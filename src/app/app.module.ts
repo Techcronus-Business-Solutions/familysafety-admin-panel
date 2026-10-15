@@ -1,4 +1,4 @@
-import { importProvidersFrom, NgModule } from '@angular/core';
+import { importProvidersFrom, NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClient, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -28,6 +28,7 @@ import { rootReducer } from './store';
 import { fakebackendInterceptor } from './core/helpers/fake-backend';
 import { ErrorInterceptor } from './core/helpers/error.interceptor';
 import { JwtInterceptor } from './core/helpers/jwt.interceptor';
+import { PreloaderInterceptor } from './core/helpers/preloader.interceptor';
 import { CRMEffects } from './store/CRM/crm.effects';
 import { ECoEffects } from './store/Ecommerce/ecommerce.effects';
 import { LearningEffects } from './store/Learning/learning.effects';
@@ -47,6 +48,17 @@ import { InstructorEffects } from './store/Learning-instructor/instructor.effect
 import { CustomerEffects } from './store/Customer/customer.effects';
 import { studentsEffects } from './store/students/student.effcts';
 import { CourcesEffects } from './store/Learning-cources/cources.effect';
+import { UserEffects } from './store/Users/user.effects';
+import { ProfileSettingEffects } from './store/ProfileSetting/profile-setting.effects';
+import { SubscriptionEffects } from './store/Subscription/subscription.effects';
+import { DashboardEffects } from './store/Dashboard/dashboard.effects';
+import { MonitoringEffects } from './store/Monitoring/monitoring.effects';
+import { SurveyEffects } from './store/Survey/survey.effects';
+import { TermsConditionsEffects } from './store/TermsConditions/terms-conditions.effects';
+import { PrivacyPolicyEffects } from './store/PrivacyPolicy/privacy-policy.effects';
+import { ReferralTermsConditionsEffects } from './store/ReferralTermsConditions/referral-terms-conditions.effects';
+import { AppVersionEffects } from './store/AppVersion/app-version.effects';
+import { SubscriptionSummaryComponent } from './pages/dashboards/index/subscription-summary.component';
 
 export function createTranslateLoader(http: HttpClient): any {
   return new TranslateHttpLoader();
@@ -60,73 +72,90 @@ if (environment.defaultauth === 'firebase') {
 @NgModule({
   declarations: [
     AppComponent,
-    AuthlayoutComponent
+    AuthlayoutComponent,
   ],
-  bootstrap: [AppComponent], imports: [TranslateModule.forRoot({
-    defaultLanguage: 'en',
-    loader: {
-      provide: TranslateLoader,
-      useFactory: (createTranslateLoader),
-      deps: [HttpClient]
-    }
-  }),
-  StoreModule.forRoot(rootReducer),
-  StoreDevtoolsModule.instrument({
-    maxAge: 25, // Retains last 25 states
-    logOnly: environment.production, // Restrict extension to log-only mode
-  }),
-  EffectsModule.forRoot([
-    AnalyticsEffects,
-    CRMEffects,
-    ECoEffects,
-    LearningEffects,
-    RealEffects,
-    AppRealestateEffects,
-    AgentEffects,
-    AgenciesEffects,
-    TicketEffects,
-    ChatEffects,
-    ProductEffects,
-    InvoiceEffects,
-    AuthenticationEffects,
-    SellerEffects,
-    OrdersEffects,
-    InstructorEffects,
-    CustomerEffects,
-    studentsEffects,
-    CourcesEffects,
-    InstructorEffects
-  ]),
-  AngularFireModule.initializeApp(environment.firebaseConfig),
+  imports: [
+    TranslateModule.forRoot({
+      defaultLanguage: 'en',
+      loader: {
+        provide: TranslateLoader,
+        useFactory: (createTranslateLoader),
+        deps: [HttpClient]
+      }
+    }),
+    StoreModule.forRoot(rootReducer),
+    StoreDevtoolsModule.instrument({
+      maxAge: 25,
+      logOnly: environment.production,
+    }),
+    EffectsModule.forRoot([
+      AnalyticsEffects,
+      CRMEffects,
+      ECoEffects,
+      LearningEffects,
+      RealEffects,
+      AppRealestateEffects,
+      AgentEffects,
+      AgenciesEffects,
+      TicketEffects,
+      ChatEffects,
+      ProductEffects,
+      InvoiceEffects,
+      AuthenticationEffects,
+      SellerEffects,
+      OrdersEffects,
+      InstructorEffects,
+      CustomerEffects,
+      studentsEffects,
+      CourcesEffects,
+      InstructorEffects,
+      UserEffects,
+      ProfileSettingEffects,
+      SubscriptionEffects,
+      DashboardEffects,
+      MonitoringEffects,
+      SurveyEffects,
+      TermsConditionsEffects,
+      PrivacyPolicyEffects,
+      ReferralTermsConditionsEffects,
+      AppVersionEffects
+    ]),
+    AngularFireModule.initializeApp(environment.firebaseConfig),
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
     LayoutsModule,
-  ToastrModule.forRoot(),
+    ToastrModule.forRoot(),
     FormsModule,
     ReactiveFormsModule,
-    AngularFireAuthModule], providers: [
-      {
-        provide: TRANSLATE_HTTP_LOADER_CONFIG,
-        useValue: {
-          prefix: 'assets/i18n/',
-          suffix: '.json'
-        },
+    AngularFireAuthModule,
+    SubscriptionSummaryComponent
+  ],
+  providers: [
+    {
+      provide: TRANSLATE_HTTP_LOADER_CONFIG,
+      useValue: {
+        prefix: 'assets/i18n/',
+        suffix: '.json'
       },
-      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-      { provide: HTTP_INTERCEPTORS, useClass: fakebackendInterceptor, multi: true },
-      provideHttpClient(withInterceptorsFromDi()),
-      importProvidersFrom(
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: createTranslateLoader,
-            deps: [HttpClient],
-          },
-          defaultLanguage: 'en', // Set your default language
-        })
-      )
-    ]
+    },
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: PreloaderInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: fakebackendInterceptor, multi: true },
+    provideHttpClient(withInterceptorsFromDi()),
+    importProvidersFrom(
+      TranslateModule.forRoot({
+        loader: {
+          provide: TranslateLoader,
+          useFactory: createTranslateLoader,
+          deps: [HttpClient],
+        },
+        defaultLanguage: 'en',
+      })
+    )
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,0 +1,52 @@
+<app-breadcrumbs [title]="title" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
+
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title mb-0">Privacy Policy</h4>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label class="form-label d-block" for="lang-select">Language</label>
+          <select class="form-select w-auto" id="lang-select" name="lang"
+            [ngModel]="selectedLanguage" [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onLanguageChange($event)">
+            <option *ngFor="let lang of languages" [value]="lang.code || lang.id">{{ lang.name ||
+              lang.language_name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label class="form-label">Content <span class="text-danger">*</span></label>
+
+          <div class="editor-shell" [class.opacity-50]="loading">
+            <div class="editor-toolbar-row">
+              <button type="button" class="btn btn-sm btn-light editor-toolbar-row__toggle"
+                (click)="toggleSourceMode()">
+                {{ sourceMode ? 'Editor' : 'View Source' }}
+              </button>
+              <ngx-editor-menu class="editor-toolbar-row__menu" [editor]="editor" [toolbar]="toolbar"
+                [disabled]="sourceMode"></ngx-editor-menu>
+            </div>
+
+            <ngx-editor [hidden]="sourceMode" class="policy-editor" formControlName="content" [editor]="editor"
+              [placeholder]="'Type here...'"></ngx-editor>
+
+            <textarea [hidden]="!sourceMode" class="form-control policy-source" formControlName="content"
+              placeholder="HTML source" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-primary" type="submit" [disabled]="editForm.invalid || saving || loading">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,116 +1,253 @@
-import { Component, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { circle, latLng, tileLayer } from 'leaflet';
-import { Observable } from 'rxjs';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ModalDirective } from 'ngx-bootstrap/modal';
-
-// amCharts imports
-import * as am5 from '@amcharts/amcharts5';
-import * as am5map from "@amcharts/amcharts5/map";
-import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
-import am5geodata_worldLow from "@amcharts/amcharts5-geodata/worldLow";
-import { shuffleArray } from 'src/app/shared/commonFunction';
 import { Store } from '@ngrx/store';
-import { fetchorderData,  fetchsalesData } from 'src/app/store/Ecommerce/ecommerce.actions';
-import { selectData, selectorderata, selectproductData } from 'src/app/store/Ecommerce/ecommerce-selector';
-import { products } from './data';
+import { ChartComponent } from 'ng-apexcharts';
+import { DashboardActions } from 'src/app/store/Dashboard/dashboard.actions';
+import { selectDashboard, selectDashboardLoading } from 'src/app/store/Dashboard/dashboard.selector';
+import { Dashboard, RecentTransaction, RecentUser } from 'src/app/store/Dashboard/dashboard.model';
 
 @Component({
-    selector: 'app-index',
-    templateUrl: './index.component.html',
-    styleUrls: ['./index.component.scss'],
-    providers: [DecimalPipe],
-    standalone: false
+  selector: 'app-index',
+  templateUrl: './index.component.html',
+  styleUrls: ['./index.component.scss'],
+  providers: [DecimalPipe],
+  standalone: false
 })
-export class IndexComponent {
+export class IndexComponent implements AfterViewInit {
+
+  // Bound imperatively in _applyCountryChartTooltips() instead of via the [tooltip]
+  // template input: ngx-bootstrap's TooltipModule (also imported by DashboardsModule
+  // for other pages) declares a directive on the same `[tooltip]` selector, so binding
+  // it in the template causes both directives to attach and ngx-bootstrap renders our
+  // ApexTooltip config object as its own tooltip text ("[object Object]").
+  @ViewChild('usersCountryChart') usersCountryChartRef?: ChartComponent;
+  @ViewChild('downloadsCountryChart') downloadsCountryChartRef?: ChartComponent;
+  @ViewChild('marketOverviewChart') marketOverviewChartRef?: ChartComponent;
 
   marketverviewChart: any;
-  columnChart: any;
-  mini6Chart: any;
-  mini7Chart: any;
-  salesList: any;
-  orderList: any;
-  produtlist: any;
+  planPieChart: any;
+  renewalsPlanChart: any;
+  revenueByYearChart: any;
+  usersByCountryChart: any;
+  revenueByCountryChart: any;
+  downloadsByMonthChart: any;
+  downloadsByCountryChart: any;
+  usersByDeviceChart: any;
+  recentTransactions: RecentTransaction[] = [];
+  recentUsers: RecentUser[] = [];
+  dashboardData?: Dashboard | null;
+  isLoading = true;
+  totalMonthlyRevenue = 0;
+  totalRevenueByYear = 0;
+  totalUsersByCountry = 0;
+  totalDownloadsByMonth = 0;
+  totalDownloadsByCountry = 0;
+  usersByCountryAxisTicks: Array<{ value: number; position: number }> = [];
+  downloadsByCountryAxisTicks: Array<{ value: number; position: number }> = [];
 
-  @ViewChild('productModal', { static: false }) productModal?: ModalDirective;
-  productdetail: any;
-  sortValue: any = 'Order Date';
+  // Per-bar values for the Revenue overview chart, looked up by dataPointIndex in
+  // the tooltip/dataLabels formatters below (tooltip.intersect: true means the
+  // tooltip only fires when hovering an actual rendered bar, so blank/zero-height
+  // months never resolve to a data point at all).
+  private _marketRevenueRaw: number[] = [];
+
+  private readonly pieDefaults = {
+    chart: { type: 'pie', height: 260 },
+    legend: {
+      position: 'bottom',
+      formatter: (seriesName: string, opts: any) => {
+        const percent = opts.w.globals.seriesPercent?.[opts.seriesIndex]?.[0];
+        return percent != null ? `${seriesName} - ${Number(percent).toFixed(1)}%` : seriesName;
+      }
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => val >= 5 ? val.toFixed(1) + '%' : '',
+      style: { fontSize: '12px', fontWeight: '600' },
+      dropShadow: { enabled: false }
+    },
+    plotOptions: { pie: { dataLabels: { offset: -25, minAngleToShowLabel: 10 } } },
+    states: {
+      hover: { filter: { type: 'none' } },
+      active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } }
+    }
+  };
 
   constructor(public store: Store) { }
 
-  ngOnInit(): void {
-    this._marketverviewChart('["--tb-primary", "--tb-secondary"]');
-    this._columnChart('["--tb-primary", "--tb-light"]');
-    this._mini6Chart('["--tb-primary"]');
-    this._mini7Chart('["--tb-info"]');
-
-    this.produtlist = products
-
-    // Recent Sales
-    this.store.dispatch(fetchsalesData());
-    this.store.select(selectData).subscribe((data) => {
-      this.salesList = data;
-    });
-    // Latest Orders
-    this.store.dispatch(fetchorderData());
-    this.store.select(selectorderata).subscribe((data) => {
-      this.orderList = data;
-    });
-
-    // Set world-map-markers amchart
-    setTimeout(() => {
-      let markerRoot = am5.Root.new("chartsdiv");
-
-      markerRoot.setThemes([am5themes_Animated.new(markerRoot)]);
-
-
-      let markerChart = markerRoot.container.children.push(
-        am5map.MapChart.new(markerRoot, {
-          panX: "none",
-          panY: "none",
-          opacity: 1,
-          projection: am5map.geoMercator(),
-        })
-      );
-
-      markerChart.series.push(
-        am5map.MapPolygonSeries.new(markerRoot, {
-          geoJSON: am5geodata_worldLow,
-          exclude: ["AQ"],
-          fill: am5.color("rgb(222, 226, 232)"),
-          stroke: am5.color("#fff"),
-        })
-      );
-
-      // Create point series
-      var pointSeries = markerChart.series.push(
-        am5map.MapPointSeries.new(markerRoot, {})
-      );
-
-      pointSeries.bullets.push(function (_root, _series, dataItem: any) {
-        return am5.Bullet.new(markerRoot, {
-          sprite: am5.Circle.new(markerRoot, {
-            radius: 6,
-            stroke: am5.color("#fff"),
-            strokeWidth: 5,
-            strokeOpacity: 0.5,
-            fill: am5.color(0x000),
-            fillOpacity: 1,
-            cursorOverStyle: 'pointer',
-          }),
-        });
-      });
-
-      pointSeries.pushDataItem({ latitude: 31.9474, longitude: 35.2272 });
-      pointSeries.pushDataItem({ latitude: 61.524, longitude: 105.3188 });
-      pointSeries.pushDataItem({ latitude: 56.1304, longitude: -106.3468 });
-      pointSeries.pushDataItem({ latitude: 71.7069, longitude: -42.6043 });
-    }, 1000);
-
-
+  hasPieData(chart: any): boolean {
+    return Array.isArray(chart?.series) && chart.series.some((value: number) => Number(value) > 0);
   }
 
-  // Chart Colors Set
+  hasSeriesData(chart: any): boolean {
+    return Array.isArray(chart?.series) && chart.series.some((s: any) =>
+      Array.isArray(s?.data) && s.data.some((value: number) => Number(value) > 0)
+    );
+  }
+
+  ngAfterViewInit(): void {
+    this._applyCountryChartTooltips();
+    this._applyMarketOverviewTooltip();
+  }
+
+  private _applyCountryChartTooltips(): void {
+    // Diagnostic logging (chart.events.click / dataPointSelection / dataPointMouseEnter)
+    // proved seriesIndex/dataPointIndex are ALWAYS correct at the point ApexCharts'
+    // event system fires — the bug lived in ApexCharts' own internal tooltip DOM
+    // renderer (a separate code path that patches title/value nodes based on
+    // continuous mouse tracking, not the click/selection events), which could show a
+    // stale value from a previously-hovered row. tooltip.custom sidesteps that
+    // renderer entirely by building a fresh HTML string from the event's own indices
+    // on every call, the same fix already verified working on the Revenue chart.
+    const tooltip = this._countryChartTooltip();
+    this.usersCountryChartRef?.updateOptions({ tooltip }, false, false);
+    this.downloadsCountryChartRef?.updateOptions({ tooltip }, false, false);
+  }
+
+  private _countryChartTooltip() {
+    return {
+      intersect: true,
+      shared: false,
+      custom: ({ seriesIndex, dataPointIndex, w }: any) => {
+        const val = w?.globals?.series?.[seriesIndex]?.[dataPointIndex];
+        if (val == null) {
+          return '';
+        }
+        const label = w.globals.labels?.[dataPointIndex] ?? '';
+        const seriesName = w.globals.seriesNames?.[seriesIndex] ?? '';
+        const color = w.globals.colors?.[seriesIndex] ?? '';
+        return `<div class="apexcharts-tooltip-title">${label}</div>
+          <div class="apexcharts-tooltip-series-group apexcharts-active" style="display:flex;">
+            <span class="apexcharts-tooltip-marker" style="background-color:${color}"></span>
+            <div class="apexcharts-tooltip-text">
+              <div class="apexcharts-tooltip-y-group">
+                <span class="apexcharts-tooltip-text-y-label">${seriesName}: </span>
+                <span class="apexcharts-tooltip-text-y-value">${val}</span>
+              </div>
+            </div>
+          </div>`;
+      }
+    };
+  }
+
+  private _applyMarketOverviewTooltip(): void {
+    this.marketOverviewChartRef?.updateOptions({ tooltip: this.marketverviewChart?.tooltip }, false, false);
+  }
+
+  ngOnInit(): void {
+    this._marketverviewChart('["--tb-primary", "--tb-secondary"]');
+
+    this.planPieChart = { ...this.pieDefaults, series: [], labels: [], colors: this.getChartColorsArray('["--tb-primary","--tb-info","--tb-pink"]') };
+    this.renewalsPlanChart = { ...this.pieDefaults, series: [], labels: [], colors: this.getChartColorsArray('["--tb-primary","--tb-info","--tb-pink"]') };
+
+    this.revenueByYearChart = {
+      series: [{ name: 'Revenue (USD)', data: [] }],
+      chart: { type: 'bar', height: 350, toolbar: { show: false } },
+      plotOptions: { bar: { columnWidth: '40%', borderRadius: 4, dataLabels: { position: 'top' } } },
+      states: { normal: { filter: { type: 'none' } }, hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+      dataLabels: { enabled: true, formatter: (v: any) => this._formatRevenue(v), offsetY: -20, style: { fontSize: '11px', colors: ['#304758'] } },
+      xaxis: { categories: [] },
+      yaxis: { labels: { formatter: (v: any) => this._formatRevenue(v) } },
+      grid: { padding: { top: -10, bottom: -10 } },
+      colors: this.getChartColorsArray('["--tb-primary"]'),
+      fill: { opacity: 1 }
+    };
+
+    this.usersByCountryChart = {
+      series: [{ name: 'Users', data: [] }],
+      chart: { type: 'bar', height: 350, toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, dataLabels: { position: 'top' } } },
+      states: { normal: { filter: { type: 'none' } }, hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+      dataLabels: { enabled: true, offsetX: 15, style: { fontSize: '11px', colors: ['#304758'] } },
+      xaxis: { categories: [], crosshairs: { show: false } },
+      colors: this.getChartColorsArray('["--tb-primary"]'),
+      fill: { opacity: 1 }
+    };
+
+    this.revenueByCountryChart = {
+      ...this.pieDefaults,
+      series: [],
+      labels: [],
+      colors: this.getChartColorsArray('["--tb-primary","--tb-info","--tb-pink","--tb-warning","--tb-danger","--tb-secondary","--tb-dark"]')
+    };
+
+    this.usersByDeviceChart = {
+      ...this.pieDefaults,
+      series: [],
+      labels: [],
+      colors: this.getChartColorsArray('["--tb-pink","--tb-primary"]')
+    };
+
+    this.downloadsByMonthChart = {
+      series: [{ name: 'Install', data: Array(12).fill(0) }],
+      chart: { type: 'bar', height: 350, toolbar: { show: false } },
+      plotOptions: { bar: { columnWidth: '40%', borderRadius: 4, dataLabels: { position: 'top' } } }, states: { hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } }, dataLabels: { enabled: true, formatter: (v: any) => v > 0 ? v : '', offsetY: -20, style: { fontSize: '11px', colors: ['#304758'] } },
+      xaxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+      yaxis: { labels: { formatter: (v: any) => Math.round(v) } },
+      grid: { padding: { top: 20, bottom: -10 } },
+      colors: this.getChartColorsArray('["--tb-primary"]'),
+      fill: { opacity: 1 }
+    };
+
+    this.downloadsByCountryChart = {
+      series: [{ name: 'Install', data: [] }],
+      chart: { type: 'bar', height: 350, width: '100%', toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, dataLabels: { position: 'top' } } },
+      states: { hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+      dataLabels: { enabled: true, offsetX: 15, style: { fontSize: '11px', colors: ['#304758'] } },
+      xaxis: { categories: [], crosshairs: { show: false } },
+      grid: { padding: { top: -10, bottom: -10 } },
+      colors: this.getChartColorsArray('["--tb-primary"]'),
+      fill: { opacity: 1 }
+    };
+
+    this.store.dispatch(DashboardActions.loadDashboard());
+    this.store.select(selectDashboardLoading).subscribe((loading) => {
+      this.isLoading = loading;
+    });
+    this.store.select(selectDashboard).subscribe((dashboard) => {
+      this.dashboardData = dashboard;
+      this.recentTransactions = dashboard?.recent_transactions ? [...dashboard.recent_transactions] : [];
+      this.recentUsers = dashboard?.recent_users ? [...dashboard.recent_users] : [];
+      this._updateDashboardCharts(dashboard);
+    });
+  }
+
+  private computeAxisScale(maxVal: number): { axisMax: number; tickAmount: number } {
+    const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000];
+    let step = 1;
+    for (const s of steps) {
+      if (Math.ceil(maxVal / s) <= 6) { step = s; break; }
+    }
+    const ticks = Math.ceil(maxVal / step) + 1;
+    return { axisMax: ticks * step, tickAmount: ticks };
+  }
+
+  private computeAxisTicks(maxVal: number): { axisMax: number; tickAmount: number; ticks: Array<{ value: number; position: number }> } {
+    const value = Math.max(Number(maxVal) || 1, 1);
+    const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000];
+    let step = 1;
+    for (const s of steps) {
+      if (Math.ceil(value / s) <= 6) { step = s; break; }
+    }
+    const labelRoom = value >= 10 ? step : 1;
+    const axisMax = Math.ceil((value + labelRoom) / step) * step;
+    const intervals = Math.max(axisMax / step, 1);
+    const ticks = Array.from({ length: intervals + 1 }, (_, index) => {
+      const tickValue = Math.round(index * step);
+      return {
+        value: tickValue,
+        position: axisMax > 0 ? (tickValue / axisMax) * 100 : 0,
+      };
+    });
+    return { axisMax, tickAmount: intervals, ticks };
+  }
+
+  private _formatRevenue(v: any): string {
+    const num = Math.round((Number(v) || 0) * 100) / 100;
+    return '$' + num;
+  }
+
   private getChartColorsArray(colors: any) {
     colors = JSON.parse(colors);
     return colors.map(function (value: any) {
@@ -135,369 +272,274 @@ export class IndexComponent {
     });
   }
 
-  /**
-*Market Overview Charts
-*/
+  private _updateDashboardCharts(dashboard: Dashboard | null) {
+    if (!dashboard) {
+      return;
+    }
 
-  changeRevenue() {
-    var EarningSeries = [26, 24.65, 18.24, 29.02, 23.65, 27, 21.18, 24.65, 27.32, 25, 24.65, 29.32]
-    const shuffledEarningSeries = [...EarningSeries];
-    shuffleArray(shuffledEarningSeries);
+    this.totalMonthlyRevenue = (dashboard.monthly_revenue?.months ?? []).reduce((sum, m) => sum + (Number(m.revenue) || 0), 0);
+    this.totalRevenueByYear = (dashboard.revenue_by_year ?? []).reduce((sum, r) => sum + (r.revenue_usd || 0), 0);
+    this.totalUsersByCountry = (dashboard.users_by_country ?? []).reduce((sum, c) => sum + (c.count || 0), 0);
+    this.totalDownloadsByMonth = (dashboard.downloads_by_month?.months ?? []).reduce((sum, m) => sum + (m.downloads || 0), 0);
+    this.totalDownloadsByCountry = (dashboard.downloads_by_country ?? []).reduce((sum, c) => sum + (c.downloads || 0), 0);
 
-    var ExpenseSeries = [-10, -17.32, -15.45, -12.30, -19.15, -15.45, -11, -14.32, -15.67, -10, -17.32, -19.2]
-    const shuffledExpenseSeries = [...ExpenseSeries];
-    shuffleArray(shuffledExpenseSeries);
+    const monthlyRevenue = [...(dashboard.monthly_revenue?.months ?? [])]
+      .sort((a, b) => a.month_number - b.month_number);
+    const monthLabels = monthlyRevenue.map((item) => item.month.slice(0, 3));
+    const monthRevenue = monthlyRevenue.map((item) => Number(item.revenue) || 0);
+    const weekLabels = dashboard.revenue.by_week?.map((item) => item.week) ?? [];
+    const weekRevenue = dashboard.revenue.by_week?.map((item) => item.revenue) ?? [];
 
-    setTimeout(() => {
-      this.marketverviewChart.series = [{
-        name: 'Earning',
-        data: shuffledEarningSeries
+    if (monthLabels.length > 0) {
+      this._marketRevenueRaw = monthRevenue;
+      this.marketverviewChart = {
+        ...this.marketverviewChart,
+        series: [{ name: `${dashboard.monthly_revenue?.year || ''} Revenue`, data: monthRevenue }],
+        xaxis: { ...this.marketverviewChart.xaxis, categories: monthLabels },
+      };
+    } else if (weekLabels.length > 0) {
+      this._marketRevenueRaw = weekRevenue;
+      this.marketverviewChart = {
+        ...this.marketverviewChart,
+        series: [{ name: 'Revenue', data: weekRevenue }],
+        xaxis: { ...this.marketverviewChart.xaxis, categories: weekLabels },
+      };
+    }
+
+    // Plan pie chart
+    const planLabels = dashboard.revenue.by_plan?.map(p => p.plan_name) ?? [];
+    const planSeries = dashboard.revenue.by_plan?.map(p => p.revenue) ?? [];
+    this.planPieChart = {
+      ...this.pieDefaults,
+      series: planSeries,
+      labels: planLabels,
+      colors: this.getChartColorsArray('["--tb-primary","--tb-info","--tb-pink"]')
+    };
+
+    // Renewals plan chart
+    const renewalLabels = dashboard.renewals?.by_plan?.map(p => p.plan_name) ?? [];
+    const renewalSeries = dashboard.renewals?.by_plan?.map(p => p.count) ?? [];
+    this.renewalsPlanChart = {
+      ...this.pieDefaults,
+      series: renewalSeries,
+      labels: renewalLabels,
+      colors: this.getChartColorsArray('["--tb-primary","--tb-info","--tb-pink"]')
+    };
+
+    // Revenue by year chart
+    const yearLabels = (dashboard.revenue_by_year ?? []).map(r => String(r.year));
+    const yearRevenue = (dashboard.revenue_by_year ?? []).map(r => r.revenue_usd);
+    this.revenueByYearChart = {
+      series: [{ name: 'Revenue (USD)', data: yearRevenue }],
+      chart: { type: 'bar', height: 350, toolbar: { show: false } },
+      plotOptions: { bar: { columnWidth: '40%', borderRadius: 4, dataLabels: { position: 'top' } } },
+      states: { hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+      dataLabels: { enabled: true, formatter: (v: any) => this._formatRevenue(v), offsetY: -20, style: { fontSize: '11px', colors: ['#304758'] } },
+      xaxis: { categories: yearLabels },
+      yaxis: { labels: { formatter: (v: any) => this._formatRevenue(v) } },
+      grid: { padding: { top: 20, bottom: -10 } },
+      colors: this.getChartColorsArray('["--tb-primary"]'),
+      fill: { opacity: 1 }
+    };
+
+    // Users by country chart
+    const countryUserLabels = (dashboard.users_by_country ?? []).map(c => c.country_name);
+    const countryUserCounts = (dashboard.users_by_country ?? []).map(c => c.count);
+    const usersCount = countryUserLabels.length;
+    const usersCountryHeight = Math.max(usersCount * 45 + 40, 350);
+    const usersMaxVal = Math.max(...countryUserCounts, 0);
+    const { axisMax: usersAxisMax, tickAmount: usersTickAmount, ticks: usersAxisTicks } = this.computeAxisTicks(usersMaxVal);
+    this.usersByCountryAxisTicks = usersAxisTicks;
+    this.usersByCountryChart = {
+      series: [{ name: 'Users', data: countryUserCounts }],
+      chart: { type: 'bar', height: usersCountryHeight, width: '100%', toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, dataLabels: { position: 'top' } } },
+      states: { hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+      dataLabels: { enabled: true, offsetX: 15, style: { fontSize: '11px', colors: ['#304758'] } },
+      xaxis: {
+        categories: countryUserLabels,
+        min: 0,
+        max: usersAxisMax,
+        tickAmount: usersTickAmount,
+        labels: { show: false },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        crosshairs: { show: false },
       },
-      {
-        name: 'Expense',
-        data: shuffledExpenseSeries
-      }]
-    }, 500);
+      grid: { padding: { bottom: -8, right: 28 } },
+      colors: this.getChartColorsArray('["--tb-primary"]'),
+      fill: { opacity: 1 }
+    };
+
+    // Revenue by country chart
+    const countryRevLabels = (dashboard.revenue_by_country ?? []).map(c => c.country_name);
+    const countryRevData = (dashboard.revenue_by_country ?? []).map(c => c.revenue_usd);
+    this.revenueByCountryChart = {
+      ...this.pieDefaults,
+      series: countryRevData,
+      labels: countryRevLabels,
+      colors: this.getChartColorsArray('["--tb-primary","--tb-info","--tb-pink","--tb-warning","--tb-danger","--tb-secondary","--tb-dark"]')
+    };
+
+    // Users by device chart
+    const deviceLabels = (dashboard.users_by_device ?? []).map(d => d.device_name);
+    const deviceData = (dashboard.users_by_device ?? []).map(d => d.count);
+    this.usersByDeviceChart = {
+      ...this.pieDefaults,
+      series: deviceData,
+      labels: deviceLabels,
+      colors: this.getChartColorsArray('["--tb-pink","--tb-primary"]')
+    };
+
+    // Downloads by month chart
+    const dlMonths = [...(dashboard.downloads_by_month?.months ?? [])]
+      .sort((a, b) => a.month_number - b.month_number);
+    const dlLabels = dlMonths.map(m => m.month.slice(0, 3));
+    const dlData = dlMonths.map(m => m.downloads);
+    if (dlLabels.length > 0) {
+      this.downloadsByMonthChart = {
+        series: [{ name: 'Total Install', data: dlData }],
+        chart: { type: 'bar', height: 350, toolbar: { show: false } },
+        plotOptions: { bar: { columnWidth: '40%', borderRadius: 4, dataLabels: { position: 'top' } } },
+        states: { normal: { filter: { type: 'none' } }, hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+        dataLabels: { enabled: true, formatter: (v: any) => v > 0 ? v : '', offsetY: -20, style: { fontSize: '11px', colors: ['#304758'] } },
+        xaxis: { categories: dlLabels },
+        yaxis: { labels: { formatter: (v: any) => Math.round(v) } },
+        grid: { padding: { top: -10, bottom: -10 } },
+        colors: this.getChartColorsArray('["--tb-primary"]'),
+        fill: { opacity: 1 }
+      };
+    }
+
+    // Downloads by country chart
+    const dlCountryLabels = (dashboard.downloads_by_country ?? []).map(c => c.country);
+    const dlCountryData = (dashboard.downloads_by_country ?? []).map(c => c.downloads);
+    if (dlCountryLabels.length > 0) {
+      const dlCount = dlCountryLabels.length;
+      const dlCountryHeight = Math.max(dlCount * 45 + 40, 350);
+      const dlCountryRadius = Math.min(6, Math.max(2, Math.floor(200 / dlCountryLabels.length)));
+      const dlMaxVal = Math.max(...dlCountryData, 0);
+      const { axisMax: dlAxisMax, tickAmount: dlTickAmount, ticks: dlAxisTicks } = this.computeAxisTicks(dlMaxVal || 1);
+      this.downloadsByCountryAxisTicks = dlAxisTicks;
+      this.downloadsByCountryChart = {
+        series: [{ name: 'Total Install', data: dlCountryData }],
+        chart: { type: 'bar', height: dlCountryHeight, width: '100%', toolbar: { show: false } },
+        plotOptions: { bar: { horizontal: true, borderRadius: dlCountryRadius, dataLabels: { position: 'top' } } },
+        states: { hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
+        dataLabels: { enabled: true, offsetX: 15, style: { fontSize: '11px', colors: ['#304758'] } },
+        xaxis: {
+          categories: dlCountryLabels,
+          min: 0,
+          max: dlAxisMax,
+          tickAmount: dlTickAmount,
+          labels: { show: false },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
+          crosshairs: { show: false },
+        },
+        grid: { padding: { top: -10, bottom: -8, right: 28 } },
+        colors: this.getChartColorsArray('["--tb-primary"]'),
+        fill: { opacity: 1 }
+      };
+    } else {
+      this.downloadsByCountryAxisTicks = [];
+    }
+
+    setTimeout(() => this._applyCountryChartTooltips());
   }
 
   private _marketverviewChart(colors: any) {
     colors = this.getChartColorsArray(colors);
     this.marketverviewChart = {
-      series: [{
-        name: 'Earning',
-        data: [26, 24.65, 18.24, 29.02, 23.65, 27, 21.18, 24.65, 27.32, 25, 24.65, 29.32]
-      },
-      {
-        name: 'Expense',
-        data: [-10, -17.32, -15.45, -12.30, -19.15, -15.45, -11, -14.32, -15.67, -10, -17.32, -19.2]
-      }
-      ],
-      chart: {
-        type: 'bar',
-        height: 328,
-        stacked: true,
-        toolbar: {
-          show: false
-        },
-      },
-      stroke: {
-        width: 5,
-        colors: "#000",
-        lineCap: 'round',
-      },
+      series: [{ name: 'Revenue', data: Array(12).fill(0) }],
+      chart: { type: 'bar', height: 328, stacked: false, toolbar: { show: false } },
+      stroke: { width: 5, colors: "#000", lineCap: 'round' },
       grid: {
         show: true,
         borderColor: '#000',
-
-        xaxis: {
-          lines: {
-            show: false
-          }
-        },
-        yaxis: {
-          lines: {
-            show: false
-          }
-        },
+        xaxis: { lines: { show: false } },
+        yaxis: { lines: { show: false } },
       },
       plotOptions: {
         bar: {
           columnWidth: '30%',
           borderRadius: 5,
           lineCap: 'round',
-          borderRadiusOnAllStackedSeries: true
-
+          borderRadiusOnAllStackedSeries: true,
+          dataLabels: { position: 'top' }
         },
       },
+      states: { hover: { filter: { type: 'none' } }, active: { allowMultipleDataPointsSelection: false, filter: { type: 'none' } } },
       colors: colors,
-      fill: {
-        opacity: 1
-      },
+      fill: { opacity: 1 },
       dataLabels: {
-        enabled: false,
-        textAnchor: 'top',
+        enabled: true,
+        offsetY: -20,
+        style: { fontSize: '11px', colors: ['#304758'] },
+        formatter: (v: any, opts: any) => {
+          const raw = this._marketRevenueRaw[opts?.dataPointIndex] ?? v;
+          return raw > 0 ? this._formatRevenue(raw) : '';
+        },
       },
       yaxis: {
         labels: {
           show: true,
-          formatter: function (y: any) {
-            return y.toFixed(0) + "k";
-          }
+          formatter: (y: any) => this._formatRevenue(y)
         },
       },
-      legend: {
-        show: false,
-        position: 'top',
-        horizontalAlign: 'right',
+      tooltip: {
+        intersect: true,
+        shared: false,
+        custom: ({ seriesIndex, dataPointIndex, w }: any) => {
+          const val = this._marketRevenueRaw[dataPointIndex];
+          if (!val) {
+            return '';
+          }
+          const label = w.globals.labels[dataPointIndex] ?? '';
+          const seriesName = w.globals.seriesNames[seriesIndex] ?? '';
+          const color = w.globals.colors[seriesIndex] ?? '';
+          return `<div class="apexcharts-tooltip-title">${label}</div>
+            <div class="apexcharts-tooltip-series-group apexcharts-active" style="display:flex;">
+              <span class="apexcharts-tooltip-marker" style="background-color:${color}"></span>
+              <div class="apexcharts-tooltip-text">
+                <div class="apexcharts-tooltip-y-group">
+                  <span class="apexcharts-tooltip-text-y-label">${seriesName}: </span>
+                  <span class="apexcharts-tooltip-text-y-value">${this._formatRevenue(val)}</span>
+                </div>
+              </div>
+            </div>`;
+        }
       },
+      legend: { show: false, position: 'top', horizontalAlign: 'right' },
       xaxis: {
         categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        labels: {
-          rotate: -90
-        },
-        axisTicks: {
-          show: true,
-        },
-        axisBorder: {
-          show: true,
-          stroke: {
-            width: 1
-          },
-        },
+        labels: { rotate: -90 },
+        axisTicks: { show: true },
+        axisBorder: { show: true, stroke: { width: 1 } },
+        crosshairs: { show: false },
       }
-    }
+    };
 
-    const attributeToMonitor = 'data-theme';
+    setTimeout(() => this._applyMarketOverviewTooltip());
 
     const observer = new MutationObserver(() => {
       this._marketverviewChart('["--tb-primary", "--tb-secondary"]');
+      this._updateDashboardCharts(this.dashboardData || null);
     });
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: [attributeToMonitor]
+      attributeFilter: ['data-theme']
     });
   }
 
-  /**
-* Column Charts
-*/
-  private _mini6Chart(colors: any) {
-    colors = this.getChartColorsArray(colors);
-    this.mini6Chart = {
-      series: [{
-        data: [50, 15, 35, 62, 23, 56, 44, 12]
-      }],
-      chart: {
-        type: 'line',
-        height: 45,
-        sparkline: {
-          enabled: true
-        }
-
-      },
-      colors: colors,
-      stroke: {
-        curve: 'smooth',
-        width: 1,
-      },
-      tooltip: {
-        fixed: {
-          enabled: false
-        },
-        x: {
-          show: false
-        },
-        y: {
-          title: {
-            formatter: function (seriesName: any) {
-              return ''
-            }
-          }
-        },
-        marker: {
-          show: false
-        }
-      }
-    }
-
-    const attributeToMonitor = 'data-theme';
-
-    const observer = new MutationObserver(() => {
-      this._mini6Chart('["--tb-primary"]');
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: [attributeToMonitor]
-    });
+  openUserInNewTab(id: any): void {
+    if (id) { window.open('/users/' + id, '_blank'); }
   }
 
-  /**
-* Column Charts
-*/
-  private _mini7Chart(colors: any) {
-    colors = this.getChartColorsArray(colors);
-    this.mini7Chart = {
-      series: [{
-        data: [50, 15, 20, 34, 23, 56, 65, 41]
-      }],
-      chart: {
-        type: 'line',
-        height: 45,
-        sparkline: {
-          enabled: true
-        }
-
-      },
-      colors: colors,
-      stroke: {
-        curve: 'smooth',
-        width: 1,
-      },
-      tooltip: {
-        fixed: {
-          enabled: false
-        },
-        x: {
-          show: false
-        },
-        y: {
-          title: {
-            formatter: function (seriesName: any) {
-              return ''
-            }
-          }
-        },
-        marker: {
-          show: false
-        }
-      }
-    }
-
-    const attributeToMonitor = 'data-theme';
-
-    const observer = new MutationObserver(() => {
-      this._mini7Chart('["--tb-info"]');
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: [attributeToMonitor]
-    });
-  }
-
-  /**
-* Column Charts
-*/
-  changeTraffic() {
-    var EngineSeries = [74, 83, 102, 97]
-    const shuffledEngineSeries = [...EngineSeries];
-    shuffleArray(shuffledEngineSeries);
-
-    var DirectSeries = [46, 57, 59, 54]
-    const shuffledDirectSeries = [...DirectSeries];
-    shuffleArray(shuffledDirectSeries);
-
-    setTimeout(() => {
-      this.columnChart.series = [{
-        name: 'Search Engine Traffic',
-        data: shuffledEngineSeries
-      }, {
-        name: 'Direct Traffic',
-        data: shuffledDirectSeries
-      }]
-    }, 500);
-  }
-
-  private _columnChart(colors: any) {
-    colors = this.getChartColorsArray(colors);
-    this.columnChart = {
-      chart: {
-        height: 360,
-        type: 'bar',
-        toolbar: {
-          show: false,
-        }
-      },
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          columnWidth: '45%',
-          endingShape: 'rounded'
-        },
-      },
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        show: true,
-        width: 1,
-        colors: ['transparent']
-      },
-      legend: {
-        show: true,
-        position: 'top',
-      },
-      series: [{
-        name: 'Search Engine Traffic',
-        data: [74, 83, 102, 97]
-      }, {
-        name: 'Direct Traffic',
-        data: [46, 57, 59, 54]
-      }],
-      colors: colors,
-      xaxis: {
-        categories: ['Feb', 'Mar', 'Apr', 'May'],
-      },
-      yaxis: {
-        show: false,
-      },
-      grid: {
-        borderColor: '#f1f1f1',
-      },
-    }
-
-    const attributeToMonitor = 'data-theme';
-
-    const observer = new MutationObserver(() => {
-      this._columnChart('["--tb-primary", "--tb-light"]');
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: [attributeToMonitor]
-    });
-  }
-
-  // Add Sorting
-  direction: any = 'asc';
-  sortKey: any = ''
-  sortBy(column: any, value: any) {
-    this.sortValue = value;
-    this.onSort(column)
-  }
-
-  onSort(column: any) {
-    if (this.direction == 'asc') {
-      this.direction = 'desc';
-    } else {
-      this.direction = 'asc';
-    }
-    const sortedArray = [...this.orderList]; // Create a new array
-    sortedArray.sort((a, b) => {
-      const res = this.compare(a[column], b[column]);
-      return this.direction === 'asc' ? res : -res;
-    });
-    this.orderList = sortedArray;
-  }
-  compare(v1: string | number, v2: string | number) {
-    return v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
-  }
-
-  /**
-  * Sale Location Map
-  */
-  choropleth = {
-    layers: [
-      tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGhlbWVzYnJhbmQiLCJhIjoiY2xmbmc3bTV4MGw1ejNzbnJqOWpubzhnciJ9.DNkdZVKLnQ6I9NOz7EED-w", {
-        id: "mapbox/light-v9",
-        tileSize: 512,
-        zoomOffset: -1,
-        maxZoom: 18,
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-          '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-          'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      })
-    ],
-    zoom: 1.1,
-    center: latLng(28, 1.5)
-  };
-  choroplethLayers = [
-    circle([41.9, 12.45], { color: "#435fe3", opacity: 0.5, weight: 10, fillColor: "#435fe3", fillOpacity: 1, radius: 400000, }),
-    circle([12.05, -61.75], { color: "#435fe3", opacity: 0.5, weight: 10, fillColor: "#435fe3", fillOpacity: 1, radius: 400000, }),
-    circle([1.3, 103.8], { color: "#435fe3", opacity: 0.5, weight: 10, fillColor: "#435fe3", fillOpacity: 1, radius: 400000, }),
-  ];
-
-  // Product Model
-  showproductModal(id: any) {
-    this.productdetail = this.produtlist[id]
-    this.productModal?.show()
+  getInitials(name?: string): string {
+    if (!name) { return ''; }
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) { return parts[0].substring(0, 2).toUpperCase(); }
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 }

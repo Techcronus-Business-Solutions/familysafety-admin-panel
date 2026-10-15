@@ -1,0 +1,78 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Subscription" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body">
+        <div id="customerList">
+          <div class="row g-4 mb-3 align-items-center">
+            <div class="col-sm">
+              <div class="d-flex justify-content-sm-end">
+                <div class="search-box ms-2 d-flex align-items-center">
+                  <button class="btn btn-md btn-primary edit-item-btn" [routerLink]="['/subscription/create']">Create
+                    New Subscription</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive table-card mt-3 mb-1">
+            <table class="table align-middle table-nowrap" id="customerTable">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Interval</th>
+                  <th>Status</th>
+                  <th style="width: 1%; white-space: nowrap;">Action</th>
+                </tr>
+              </thead>
+              <tbody class="list form-check-all">
+                <tr *ngFor="let subscription of subscriptions; let i = index" id="u_{{subscription.id}}"
+                  [routerLink]="['/subscription/edit', subscription.id]" class="clickable-row">
+                  <td>{{ i + 1 }}</td>
+                  <td class="name">{{ subscription.name }}</td>
+                  <td class="price">{{ subscription.price | currency }}</td>
+                  <td class="interval text-capitalize">{{ subscription.interval }}</td>
+                  <td>{{ subscription.is_active ? 'Active' : 'Deactivate' }}</td>
+                  <td (click)="$event.stopPropagation()" class="actions-cell">
+                    <div class="d-flex gap-2">
+                      <div class="edit">
+                        <button class="btn btn-sm btn-primary edit-item-btn"
+                          [routerLink]="['/subscription/edit', subscription.id]"><i class="ri-edit-line"></i></button>
+                      </div>
+                      <div class="edit">
+                        <button class="btn btn-sm btn-danger delete-item-btn"
+                          (click)="deleteSubscription(subscription.id)"><i class="ri-delete-bin-line"></i></button>
+                      </div>
+                      <div class="unsuspend" *ngIf="subscription.is_active">
+                        <button class="btn btn-sm btn-danger remove-item-btn"
+                          (click)="statusChange(subscription.id, subscription.is_active)">Deactivate</button>
+                      </div>
+                      <div class="suspend" *ngIf="!subscription.is_active">
+                        <button class="btn btn-sm btn-success remove-item-btn"
+                          (click)="statusChange(subscription.id, subscription.is_active)">Activate</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="noresult text-center py-5" *ngIf="!loading && subscriptions.length === 0">
+              <div class="text-center">
+                <i class="ri-search-line fs-1 text-muted d-block mb-2"></i>
+                <h5 class="mt-2">No Data Found</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end col -->
+</div>
+<!-- end row -->

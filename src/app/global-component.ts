@@ -1,13 +1,16 @@
+import { environment } from '../environments/environment';
+
 export const GlobalComponent = {
     // Api Calling
-    API_URL: 'https://api-node.themesbrand.website/',
-    // API_URL : 'http://127.0.0.1:3000/',
+    API_URL: environment.apiUrl,
+
     headerToken: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
 
     // Auth Api
-    AUTH_API: "https://api-node.themesbrand.website/auth/",
-    // AUTH_API:"http://127.0.0.1:3000/auth/",
+    AUTH_API: environment.authApi,
 
+    // WebSocket
+    WS_SOS_LOCATION: environment.wsSosLocation,
 
     // Products Api
     product: 'apps/product',

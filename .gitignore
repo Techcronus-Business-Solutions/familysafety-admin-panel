@@ -10,7 +10,6 @@
 /node_modules
 npm-debug.log
 yarn-error.log
-package-lock.json
 
 # IDEs and editors
 .idea/
@@ -41,3 +40,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local dev environment config (machine-specific, may hold local secrets) - never commit.
+# environment.prod.ts and environment.staging.ts ARE committed: they only hold safe
+# placeholder tokens, with real values injected by CI from GitHub Secrets at build time.
+/src/environments/environment.ts

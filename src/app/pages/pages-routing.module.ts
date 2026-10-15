@@ -9,6 +9,33 @@ const routes: Routes = [
     path: 'apps', loadChildren: () => import('./apps/apps.module').then(m => m.AppsModule)
   },
   {
+    path: 'users', loadChildren: () => import('./users/users.module').then(m => m.UsersModule)
+  },
+  {
+    path: 'subscription', loadChildren: () => import('./subscription/subscription.module').then(m => m.SubscriptionModule)
+  },
+  {
+    path: 'monitoring', loadChildren: () => import('./monitoring/monitoring.module').then(m => m.MonitoringModule)
+  },
+  {
+    path: 'survey', loadChildren: () => import('./survey/survey.module').then(m => m.SurveyModule)
+  },
+  {
+    path: 'terms-conditions-management', loadChildren: () => import('./terms-conditions-management/terms-conditions-management.module').then(m => m.TermsConditionsManagementModule)
+  },
+  {
+    path: 'privacy-policy-management', loadChildren: () => import('./privacy-policy-management/privacy-policy-management.module').then(m => m.PrivacyPolicyManagementModule)
+  },
+  {
+    path: 'referral-terms-conditions-management', loadChildren: () => import('./referral-terms-conditions-management/referral-terms-conditions-management.module').then(m => m.ReferralTermsConditionsManagementModule)
+  },
+  {
+    path: 'app-version', loadChildren: () => import('./app-version/app-version.module').then(m => m.AppVersionModule)
+  },
+  {
+    path: 'group', loadChildren: () => import('./group/group.module').then(m => m.GroupModule)
+  },
+  {
     path: 'ecommerce', loadChildren: () => import('./ecommerce/ecommerce.module').then(m => m.EcommerceModule)
   },
   {
@@ -22,9 +49,6 @@ const routes: Routes = [
   },
   {
     path: 'advance-ui', loadChildren: () => import('./advanceui/advanceui.module').then(m => m.AdvanceuiModule)
-  },
-  {
-    path: 'maps', loadChildren: () => import('./maps/maps.module').then(m => m.MapsModule)
   },
   {
     path: 'tickets', loadChildren: () => import('./tickets/tickets.module').then(m => m.TicketsModule)

@@ -147,10 +147,10 @@ $grays: (
 // fusv-enable
 
 // scss-docs-start color-variables
-$blue: #3762ea;
+$blue: #002266;
 $indigo: #1e1a22;
 $purple: #8561f9;
-$pink: #f7649f;
+$pink: #c90e91;
 $red: #ff6c6c;
 $orange: #f1963b;
 $yellow: #f6b749;
@@ -524,9 +524,11 @@ $spacers: (
 );
 
 $negative-spacers: null;
+
 @if $enable-negative-margins {
   $negative-spacers: negativify-map($spacers);
 }
+
 // scss-docs-end spacer-variables-maps
 
 // Position

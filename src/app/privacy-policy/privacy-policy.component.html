@@ -1,0 +1,8 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+      <div *ngIf="loading" class="text-center py-5">Loading...</div>
+      <div *ngIf="!loading" [innerHTML]="content"></div>
+    </div>
+  </div>
+</div>

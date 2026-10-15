@@ -58,6 +58,57 @@
         "EARNINGS": "Earnings"
       }
     },
+    "USERS": {
+      "TEXT": "Users",
+      "LIST": {
+        "USERS": "Users"
+      }
+    },
+    "SUBSCRIPTION": {
+      "TEXT": "Subscription",
+      "LIST": {
+        "SUBSCRIPTION": "Subscription"
+      }
+    },
+    "SURVEY": {
+      "LIST": {
+        "SURVEY": "Survey Questions"
+      }
+    },
+    "TERMSCONDITIONS": {
+      "LIST": {
+        "TERMSCONDITIONS": "Terms & Conditions"
+      }
+    },
+    "PRIVACYPOLICY": {
+      "LIST": {
+        "PRIVACYPOLICY": "Privacy Policy"
+      }
+    },
+    "REFERRALTERMSCONDITIONS": {
+      "LIST": {
+        "REFERRALTERMSCONDITIONS": "Referral Terms & Conditions"
+      }
+    },
+    "APPVERSION": {
+      "LIST": {
+        "APPVERSION": "App Version"
+      }
+    },
+    "GROUP": {
+      "LIST": {
+        "GROUP": "Groups"
+      }
+    },
+    "MONITORING": {
+      "TEXT": "Monitoring",
+      "LIST": {
+        "GEOFENCELOG": "Geofence Logs",
+        "SOSALERT": "SOS Alerts",
+        "REFERRAL": "Referrals List",
+        "PAYMENTHISTORY": "Payment History"
+      }
+    },
     "PAGES": {
       "TEXT": "Pages"
     },

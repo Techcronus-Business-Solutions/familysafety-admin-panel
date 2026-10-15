@@ -1,0 +1,50 @@
+.editor-shell {
+  border: 1px solid var(--tb-border-color);
+  border-radius: var(--tb-border-radius);
+  overflow: hidden;
+}
+
+.editor-toolbar-row {
+  display: flex;
+  align-items: stretch;
+
+  &__menu {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    ::ng-deep .NgxEditor__MenuBar {
+      border: none;
+    }
+  }
+
+  &__toggle {
+    flex: 0 0 auto;
+    border-radius: 0;
+    border: none;
+    border-left: 1px solid var(--tb-border-color);
+  }
+}
+
+.terms-editor {
+  display: block;
+
+  ::ng-deep .NgxEditor {
+    height: 900px !important;
+    border: none;
+    border-top: 1px solid var(--tb-border-color);
+    border-radius: 0;
+  }
+
+  ::ng-deep .NgxEditor__Content {
+    height: 100%;
+  }
+}
+
+.terms-source {
+  height: 900px;
+  font-family: monospace;
+  white-space: pre;
+  border: none !important;
+  border-top: 1px solid var(--tb-border-color) !important;
+  border-radius: 0 !important;
+}

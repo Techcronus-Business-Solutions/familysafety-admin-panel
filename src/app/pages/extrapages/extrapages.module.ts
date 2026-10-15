@@ -8,6 +8,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
 
 // Select Droup down
 import { NgSelectModule } from '@ng-select/ng-select';
+import { NgxIntlTelInputModule } from 'ngx-intl-tel-input';
 
 // Bootstrap Component
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -47,6 +48,7 @@ import { TermConditionsComponent } from './term-conditions/term-conditions.compo
     TabsModule.forRoot(),
     ProgressbarModule.forRoot(),
     NgSelectModule,
+    NgxIntlTelInputModule,
     FormsModule,
     ReactiveFormsModule,
     PaginationModule.forRoot(),

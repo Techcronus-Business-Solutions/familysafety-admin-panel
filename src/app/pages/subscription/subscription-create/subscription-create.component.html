@@ -1,0 +1,156 @@
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h4 class="card-title mb-0">Create New Subscription</h4>
+    <button type="button" class="btn btn-light" (click)="goBack()">
+      <i class="ri-arrow-left-line me-1"></i> Back
+    </button>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="createForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="name" placeholder="Name">
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Price <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="price" type="text" placeholder="Price" inputmode="decimal"
+            pattern="^\d+(\.\d{0,2})?$"
+            oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label d-block">Interval <span class="text-danger">*</span></label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" formControlName="interval" id="intervalMonthly" value="monthly"
+                type="radio">
+              <label class="form-check-label" for="intervalMonthly">Monthly</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" formControlName="interval" id="intervalYearly" value="year" type="radio">
+              <label class="form-check-label" for="intervalYearly">Yearly</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label class="form-label">Description </label>
+          <textarea class="form-control" formControlName="description" placeholder="Description" cols="30"
+            rows="3"></textarea>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Plan SKU</label>
+          <input class="form-control" formControlName="plan_sku" placeholder="Plan SKU">
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Apple Product ID</label>
+          <input class="form-control" formControlName="apple_product_id" placeholder="Apple Product ID">
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Google Product ID</label>
+          <input class="form-control" formControlName="google_product_id" placeholder="Google Product ID">
+        </div>
+      </div>
+      <hr>
+      <h4 class="card-title mb-3">Limitations</h4>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Max Group</label>
+          <input type="text" class="form-control" formControlName="max_groups" placeholder="Max Groups"
+            inputmode="numeric" pattern="\d*" oninput="this.value = this.value.replace(/\D/g, '');">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Max Members per Group</label>
+          <input type="text" class="form-control" formControlName="max_members_per_group"
+            placeholder="Max Members per Group" inputmode="numeric" pattern="\d*"
+            oninput="this.value = this.value.replace(/\D/g, '');">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Max Safe Zones</label>
+          <input type="text" class="form-control" formControlName="max_safe_zones" placeholder="Max Safe Zones"
+            inputmode="numeric" pattern="\d*" oninput="this.value = this.value.replace(/\D/g, '');">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Location History Days</label>
+          <input type="text" class="form-control" formControlName="location_history_days"
+            placeholder="Location History Days" inputmode="numeric" pattern="\d*"
+            oninput="this.value = this.value.replace(/\D/g, '');">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label d-block">Offline SMS Support</label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" formControlName="offline_support" id="offlineSupportYes" value="true"
+                type="radio">
+              <label class="form-check-label" for="offlineSupportYes">Yes</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" formControlName="offline_support" id="offlineSupportNo" value="false"
+                type="radio">
+              <label class="form-check-label" for="offlineSupportNo">No</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label d-block">Family Dashboard</label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" formControlName="family_dashboard" id="familyDashboardYes" value="true"
+                type="radio">
+              <label class="form-check-label" for="familyDashboardYes">Yes</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" formControlName="family_dashboard" id="familyDashboardNo" value="false"
+                type="radio">
+              <label class="form-check-label" for="familyDashboardNo">No</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Max Family Members</label>
+          <input type="text" class="form-control" formControlName="max_family_members" placeholder="Max Family Members"
+            inputmode="numeric" pattern="\d*" oninput="this.value = this.value.replace(/\D/g, '');">
+        </div>
+      </div>
+      <hr>
+      <div formArrayName="features" class="mb-3">
+        <label class="form-label">Features</label>
+
+        <div class="row" *ngFor="let featureCtrl of features.controls; let i = index; let isLast = last">
+          <div class="col-md-12 mb-3">
+            <div class="input-group">
+
+              <input type="text" [formControlName]="i" class="form-control" placeholder="Enter Feature">
+
+              <!-- Remove Button with Icon -->
+              <button *ngIf="features.length > 1" class="btn btn-danger" type="button" (click)="removeFeature(i)">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+
+              <!-- Add Button with Icon -->
+              <button *ngIf="isLast" class="btn btn-primary" type="button" (click)="addFeature()">
+                <i class="ri-add-line"></i>
+              </button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-primary" type="submit" [disabled]="createForm.invalid || loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Create
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
