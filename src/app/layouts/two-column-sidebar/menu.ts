@@ -60,6 +60,13 @@ export const MENU: MenuItem[] = [
         parentId: 1
     },
     {
+        id: 188,
+        label: 'MENUITEMS.SUBSCRIPTIONFEATURES.LIST.SUBSCRIPTIONFEATURES',
+        icon: 'ph-list-checks',
+        link: '/subscription-features',
+        parentId: 1
+    },
+    {
         id: 178,
         label: 'MENUITEMS.MONITORING.TEXT',
         isTitle: true

@@ -59,6 +59,13 @@ export const MENU: MenuItem[] = [
         parentId: 1
     },
     {
+        id: 188,
+        label: 'MENUITEMS.SUBSCRIPTIONFEATURES.LIST.SUBSCRIPTIONFEATURES',
+        icon: 'ph-list-checks',
+        link: '/subscription-features',
+        parentId: 1
+    },
+    {
         id: 177,
         label: 'MENUITEMS.SURVEY.LIST.SURVEY',
         icon: 'ph-clipboard-text',

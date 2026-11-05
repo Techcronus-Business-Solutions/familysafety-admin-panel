@@ -139,6 +139,33 @@ export class SubscriptionService {
     );
   }
 
+  getPlanTiers(token: string, lang: string): Observable<any> {
+    const url = API_URL + 'plan-tiers/';
+    const params = new HttpParams().set('lang', lang);
+    return this.http.get<any>(url, { ...this.createHeaders(token), params }).pipe(
+      map((response: any) => this.handleApiResponse(response, 200)),
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  updatePlanTiers(token: string, lang: string, payload: any): Observable<any> {
+    const url = API_URL + 'plan-tiers/';
+    const params = new HttpParams().set('lang', lang);
+    return this.http.patch<any>(url, payload, { ...this.createHeaders(token), params }).pipe(
+      map((response: any) => this.handleApiResponse(response, [200, 201])),
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  translatePlanLabels(token: string, lang: string): Observable<any> {
+    const url = API_URL + 'subscriptions-plan-translate-label/';
+    const params = new HttpParams().set('lang', lang);
+    return this.http.post<any>(url, {}, { ...this.createHeaders(token), params }).pipe(
+      map((response: any) => this.handleApiResponse(response, [200, 201])),
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
   translateSubscription(token: string, id: any, lang: string): Observable<any> {
     const url = API_URL + `subscriptions/${id}/translate/`;
     const params = new HttpParams().set('lang', lang);

@@ -119,9 +119,6 @@ export class SubscriptionEditComponent implements OnDestroy {
           });
         }
 
-        if (this.features.length === 0) {
-          this.addFeature(null, '', 1);
-        }
       }
     });
 
@@ -186,9 +183,6 @@ export class SubscriptionEditComponent implements OnDestroy {
       });
     }
 
-    if (this.features.length === 0) {
-      this.addFeature(null, '', 1);
-    }
   }
 
   onSubmit(): void {
@@ -248,15 +242,10 @@ export class SubscriptionEditComponent implements OnDestroy {
     this.features.push(
       this.fb.group({
         id: [featureId],
-        feature_name: [name, [Validators.required]],
+        feature_name: [name],
         order: [orderIndex]
       })
     );
-  }
-
-  // Removes the specific row index clicked
-  removeFeature(index: number): void {
-    this.features.removeAt(index);
   }
 
   fetchLanguages(): void {
