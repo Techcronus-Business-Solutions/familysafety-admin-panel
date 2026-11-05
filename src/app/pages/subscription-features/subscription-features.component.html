@@ -1,3 +1,13 @@
+<!-- Full-screen blurred loader: stays until the page has fully loaded, and during save/translate. -->
+<div *ngIf="loading || saving || translating" class="page-loader" role="status" aria-live="polite">
+  <div class="page-loader-box">
+    <div class="spinner-border text-primary" role="status"></div>
+    <span class="page-loader-text">
+      {{ saving ? 'Saving changes…' : translating ? 'Translating details…' : 'Loading…' }}
+    </span>
+  </div>
+</div>
+
 <div class="card">
   <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
     <div>
@@ -33,12 +43,10 @@
       <span *ngFor="let w of warnings; let last = last">{{ w }}<span *ngIf="!last">; </span></span>
     </div>
 
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-    </div>
-
-    <ng-container *ngIf="!loading">
-      <div *ngIf="!tiers.length" class="text-center text-muted py-5">No plans found.</div>
+    <!-- Content stays rendered while loading so the overlay blurs the page behind it. -->
+    <ng-container>
+      <div *ngIf="!tiers.length && loading" class="loading-placeholder"></div>
+      <div *ngIf="!tiers.length && !loading" class="text-center text-muted py-5">No plans found.</div>
 
       <ng-container *ngIf="tiers.length">
         <!-- Plan name & description -->
@@ -52,6 +60,32 @@
               <label class="form-label">Description</label>
               <textarea class="form-control" rows="3" [(ngModel)]="tier.description"
                 (ngModelChange)="markDirty()" placeholder="Description"></textarea>
+
+              <!-- Store product details: read-only, collapsible -->
+              <button type="button" class="billing-toggle mt-3" (click)="tier.showBilling = !tier.showBilling"
+                [attr.aria-expanded]="tier.showBilling">
+                <span><i class="ri-price-tag-3-line me-1"></i> Plan Details</span>
+                <i class="ri-arrow-down-s-line billing-chevron" [class.open]="tier.showBilling"></i>
+              </button>
+
+              <div *ngIf="tier.showBilling" class="billing-details">
+                <div *ngFor="let billing of tier.billingRows" class="billing-block">
+                  <div class="billing-period">{{ billing.period }}</div>
+                  <ng-container *ngIf="billing.data; else noBilling">
+                    <dl class="billing-list mb-0">
+                      <dt>Plan SKU</dt>
+                      <dd>{{ billing.data.plan_sku || '—' }}</dd>
+                      <dt>Google Product ID</dt>
+                      <dd>{{ billing.data.google_product_id || '—' }}</dd>
+                      <dt>Apple Product ID</dt>
+                      <dd>{{ billing.data.apple_product_id || '—' }}</dd>
+                    </dl>
+                  </ng-container>
+                  <ng-template #noBilling>
+                    <div class="text-muted small">No {{ billing.period.toLowerCase() }} plan configured.</div>
+                  </ng-template>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -50,17 +50,17 @@ export const MENU: MenuItem[] = [
         link: '/users',
         parentId: 1
     },
-    {
-        id: 176,
-        label: 'MENUITEMS.SUBSCRIPTION.LIST.SUBSCRIPTION',
-        icon: 'ph-credit-card',
-        link: '/subscription',
-        parentId: 1
-    },
+    // {
+    //     id: 176,
+    //     label: 'MENUITEMS.SUBSCRIPTION.LIST.SUBSCRIPTION',
+    //     icon: 'ph-credit-card',
+    //     link: '/subscription',
+    //     parentId: 1
+    // },
     {
         id: 188,
-        label: 'MENUITEMS.SUBSCRIPTIONFEATURES.LIST.SUBSCRIPTIONFEATURES',
-        icon: 'ph-list-checks',
+        label: 'MENUITEMS.SUBSCRIPTION.LIST.SUBSCRIPTION',
+        icon: 'ph-credit-card',
         link: '/subscription-features',
         parentId: 1
     },

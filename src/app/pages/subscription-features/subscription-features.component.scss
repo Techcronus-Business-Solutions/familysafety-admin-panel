@@ -1,3 +1,112 @@
+// Full-screen loader with a blurred backdrop.
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: progress;
+}
+
+:host-context([data-bs-theme="dark"]) .page-loader {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.page-loader-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.page-loader-text {
+  font-weight: 500;
+  color: var(--tb-body-color, #495057);
+}
+
+// Gives the empty card some height on first load so there is something to blur.
+.loading-placeholder {
+  min-height: 50vh;
+}
+
+// Plan card: read-only store product details (collapsible).
+.billing-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tb-border-color, #e9ebec);
+  border-radius: 0.25rem;
+  background-color: var(--tb-light, #f3f6f9);
+  color: var(--tb-body-color, #495057);
+  font-weight: 500;
+  text-align: left;
+
+  &:hover {
+    border-color: #adb5bd;
+  }
+}
+
+.billing-chevron {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.billing-details {
+  margin-top: 0.5rem;
+  border: 1px solid var(--tb-border-color, #e9ebec);
+  border-radius: 0.25rem;
+}
+
+.billing-block {
+  padding: 0.65rem 0.75rem;
+
+  & + & {
+    border-top: 1px solid var(--tb-border-color, #e9ebec);
+  }
+}
+
+.billing-period {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--tb-primary, #4b38b3);
+  margin-bottom: 0.35rem;
+}
+
+.billing-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+  row-gap: 0.2rem;
+  font-size: 0.8125rem;
+
+  dt {
+    font-weight: 500;
+    color: var(--tb-secondary-color, #878a99);
+  }
+
+  dd {
+    margin: 0;
+    word-break: break-all;
+  }
+}
+
 // Darker borders for every input, select, checkbox/switch and radio on this page.
 $field-border: #adb5bd;
 

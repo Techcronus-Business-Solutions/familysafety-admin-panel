@@ -31,6 +31,15 @@ interface PlanTier {
   description: string;
   slot: number;
   original: { name: string; description: string };
+  /** Monthly / yearly store products. Display only — never sent on save. */
+  billingRows: PlanBillingRow[];
+  showBilling: boolean;
+}
+
+interface PlanBillingRow {
+  period: 'Monthly' | 'Yearly';
+  /** null when the API has no row for this period. */
+  data: { id: number; plan_sku: string; google_product_id: string; apple_product_id: string } | null;
 }
 
 interface FeatureRow {
@@ -77,6 +86,8 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
   constructor(private subscriptionService: SubscriptionService, private toastr: ToastrService) { }
 
   ngOnInit(): void {
+    // Full-screen loader stays up until languages and plan features have both loaded.
+    this.loading = true;
     this.fetchLanguages();
   }
 
@@ -161,6 +172,11 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       description: t.description ?? '',
       slot: t.slot,
       original: { name: t.name ?? '', description: t.description ?? '' },
+      billingRows: [
+        { period: 'Monthly' as const, data: t.rows?.monthly ?? null },
+        { period: 'Yearly' as const, data: t.rows?.yearly ?? null },
+      ],
+      showBilling: false,
     }));
 
     // Merge each tier's feature list into one row per feature key, keeping API order.
