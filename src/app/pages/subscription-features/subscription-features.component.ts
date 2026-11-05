@@ -103,7 +103,10 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
         this.loadPlanTiers();
       },
       error: (err: any) => {
-        this.toastr.error(err || 'Failed to load languages', 'Error');
+        this.toastr.error(
+          "We couldn't load the list of languages, so English is being shown. Please refresh the page to try again.",
+          'Languages Unavailable'
+        );
         this.loadPlanTiers();
       }
     });
@@ -132,7 +135,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.tiers = [];
         this.rows = [];
-        this.toastr.error(err || 'Failed to load plan features', 'Error');
+        this.toastr.error(err || "We couldn't load the plan features. Please try again.", 'Unable to Load');
       }
     });
   }
@@ -465,7 +468,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.saving = false;
-        this.toastr.error(err || 'Failed to update plan features', 'Error');
+        this.toastr.error(err || "We couldn't save the plan features. Please try again.", 'Save Failed');
       }
     });
   }
@@ -486,7 +489,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.translating = false;
-        this.toastr.error(err || 'Failed to translate details', 'Error');
+        this.toastr.error(err || "We couldn't translate the plan details. Please try again.", 'Translation Failed');
       }
     });
   }
