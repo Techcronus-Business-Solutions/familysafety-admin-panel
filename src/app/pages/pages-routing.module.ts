@@ -15,6 +15,9 @@ const routes: Routes = [
     path: 'subscription', loadChildren: () => import('./subscription/subscription.module').then(m => m.SubscriptionModule)
   },
   {
+    path: 'subscription-features', loadComponent: () => import('./subscription-features/subscription-features.component').then(m => m.SubscriptionFeaturesComponent)
+  },
+  {
     path: 'monitoring', loadChildren: () => import('./monitoring/monitoring.module').then(m => m.MonitoringModule)
   },
   {

@@ -1,0 +1,235 @@
+<!-- Full-screen blurred loader: stays until the page has fully loaded, and during save/translate. -->
+<div *ngIf="loading || saving || translating" class="page-loader" role="status" aria-live="polite">
+  <div class="page-loader-box">
+    <div class="spinner-border text-primary" role="status"></div>
+    <span class="page-loader-text">
+      {{ saving ? 'Saving changes…' : translating ? 'Translating details…' : 'Loading…' }}
+    </span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+      <h4 class="card-title mb-0">Subscription Features</h4>
+      <p class="text-muted mb-0 small">Compare and manage the features available in each plan.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span *ngIf="dirty" class="badge bg-warning-subtle text-warning">Unsaved changes</span>
+      <button type="button" class="btn btn-outline-primary" *ngIf="selectedLanguage && selectedLanguage !== 'en'"
+        (click)="translateDetails()" [disabled]="loading || saving || translating">
+        <span *ngIf="translating" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Translate Details
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="loading || saving || translating || !tiers.length">
+        <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Save Changes
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="form-label d-block" for="features-lang-select">Language</label>
+      <select class="form-select w-auto" id="features-lang-select" [ngModel]="selectedLanguage"
+        (ngModelChange)="onLanguageChange($event)" [disabled]="loading || saving">
+        <option *ngFor="let lang of languages" [value]="lang.code || lang.id">{{ lang.name || lang.language_name }}
+        </option>
+      </select>
+    </div>
+
+    <div *ngIf="warnings.length" class="alert alert-warning py-2 small">
+      <i class="ri-error-warning-line me-1"></i>
+      <span *ngFor="let w of warnings; let last = last">{{ w }}<span *ngIf="!last">; </span></span>
+    </div>
+
+    <!-- Content stays rendered while loading so the overlay blurs the page behind it. -->
+    <ng-container>
+      <div *ngIf="!tiers.length && loading" class="loading-placeholder"></div>
+      <div *ngIf="!tiers.length && !loading" class="text-center text-muted py-5">No plans found.</div>
+
+      <ng-container *ngIf="tiers.length">
+        <!-- Plan name & description -->
+        <h6 class="text-uppercase text-muted fs-12 mb-2">Plans</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4" *ngFor="let tier of tiers; trackBy: trackTier">
+            <div class="border rounded p-3 h-100">
+              <label class="form-label">Plan Name <span class="text-danger">*</span></label>
+              <input class="form-control mb-3" [(ngModel)]="tier.name" (ngModelChange)="markDirty()"
+                placeholder="Plan name">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="tier.description"
+                (ngModelChange)="markDirty()" placeholder="Description"></textarea>
+
+              <!-- Store product details: read-only, collapsible -->
+              <button type="button" class="billing-toggle mt-3" (click)="tier.showBilling = !tier.showBilling"
+                [attr.aria-expanded]="tier.showBilling">
+                <span><i class="ri-price-tag-3-line me-1"></i> Plan Details</span>
+                <i class="ri-arrow-down-s-line billing-chevron" [class.open]="tier.showBilling"></i>
+              </button>
+
+              <div *ngIf="tier.showBilling" class="billing-details">
+                <div *ngFor="let billing of tier.billingRows" class="billing-block">
+                  <div class="billing-period">{{ billing.period }}</div>
+                  <ng-container *ngIf="billing.data; else noBilling">
+                    <dl class="billing-list mb-0">
+                      <dt>Plan SKU</dt>
+                      <dd>{{ billing.data.plan_sku || '—' }}</dd>
+                      <dt>Google Product ID</dt>
+                      <dd>{{ billing.data.google_product_id || '—' }}</dd>
+                      <dt>Apple Product ID</dt>
+                      <dd>{{ billing.data.apple_product_id || '—' }}</dd>
+                    </dl>
+                  </ng-container>
+                  <ng-template #noBilling>
+                    <div class="text-muted small">No {{ billing.period.toLowerCase() }} plan configured.</div>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features comparison -->
+        <h6 class="text-uppercase text-muted fs-12 mb-2">Compare Plans</h6>
+
+        <ng-template #addFeatureForm>
+        <div *ngIf="showAddForm" class="border rounded p-3 mt-3 bg-light-subtle">
+          <div class="row g-2 align-items-end">
+            <div class="col-auto me-md-5">
+              <label class="form-label">Feature Name <span class="text-danger">*</span></label>
+              <input class="form-control new-feature-input" [(ngModel)]="newFeature.label" placeholder="e.g. Priority Alerts"
+                (keydown.enter)="addExtraFeature()">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label d-block">Value Type</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="newTypeRadio" name="newFeatureType" value="radio"
+                  [(ngModel)]="newFeature.type">
+                <label class="form-check-label" for="newTypeRadio">Checkbox (Yes / No)</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="newTypeNumber" name="newFeatureType" value="number"
+                  [(ngModel)]="newFeature.type">
+                <label class="form-check-label" for="newTypeNumber">Number</label>
+              </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+              <button type="button" class="btn btn-light" (click)="cancelAdd()">Cancel</button>
+              <button type="button" class="btn btn-primary" (click)="addExtraFeature()">Add</button>
+            </div>
+          </div>
+          <p class="small text-muted mb-0 mt-2">After adding, set the value for each plan in the table above.</p>
+        </div>
+        </ng-template>
+
+        <div class="table-responsive compare-table-wrapper">
+          <table class="table align-middle compare-table mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="feature-col">Features</th>
+                <th *ngFor="let tier of tiers; trackBy: trackTier" class="text-center tier-col">{{ tier.name }}</th>
+                <th class="text-end action-col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="section-row">
+                <td [attr.colspan]="tiers.length + 2">
+                  Default Features
+                </td>
+              </tr>
+              <ng-container *ngTemplateOutlet="featureRows; context: { $implicit: fixedRows }"></ng-container>
+
+              <tr class="section-row">
+                <td [attr.colspan]="tiers.length + 2">
+                  Extra Features
+                </td>
+              </tr>
+              <tr *ngIf="!extraRows.length">
+                <td [attr.colspan]="tiers.length + 2" class="text-center text-muted small py-3">
+                  No extra features. Use "Add Feature" below to create one.
+                </td>
+              </tr>
+              <ng-container *ngTemplateOutlet="featureRows; context: { $implicit: extraRows }"></ng-container>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-container *ngTemplateOutlet="addFeatureForm"></ng-container>
+
+        <div class="mt-3" *ngIf="!showAddForm">
+          <button type="button" class="btn btn-primary" (click)="openAdd()">
+            <i class="ri-add-line me-1"></i> Add Feature
+          </button>
+        </div>
+
+        <p class="small text-muted mt-2 mb-0">
+          <i class="ri-information-line me-1"></i>For number features, leave the value empty for unlimited.
+        </p>
+
+        <div class="d-flex align-items-center justify-content-end gap-2 border-top pt-3 mt-3">
+          <span *ngIf="dirty" class="badge bg-warning-subtle text-warning">Unsaved changes</span>
+          <button type="button" class="btn btn-outline-primary" *ngIf="selectedLanguage && selectedLanguage !== 'en'"
+            (click)="translateDetails()" [disabled]="loading || saving || translating">
+            <span *ngIf="translating" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Translate Details
+          </button>
+          <button type="button" class="btn btn-primary" (click)="save()" [disabled]="loading || saving || translating || !tiers.length">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Save Changes
+          </button>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>
+
+<ng-template #featureRows let-list>
+  <tr *ngFor="let row of list; let first = first; let last = last; trackBy: trackRow"
+    [class.table-success]="row.isNew">
+    <td class="feature-col">
+      <div class="d-flex align-items-center gap-2">
+        <input *ngIf="row.labelEditable; else fixedLabel" class="form-control feature-name-input" [(ngModel)]="row.label"
+          (ngModelChange)="markDirty()" placeholder="Feature name">
+        <ng-template #fixedLabel>
+          <span class="fw-medium">{{ row.label }}</span>
+        </ng-template>
+        <span *ngIf="row.kind !== 'extra'" class="text-muted small text-nowrap">({{ formatKey(row.key) }})</span>
+      </div>
+      <div *ngIf="row.isNew" class="mt-1">
+        <span class="badge bg-success-subtle text-success">New</span>
+      </div>
+    </td>
+
+    <td *ngFor="let tier of tiers; trackBy: trackTier" class="text-center tier-col">
+      <ng-container *ngIf="row.type === 'radio'; else numberCell">
+        <div class="form-check form-switch d-inline-block m-0">
+          <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="row.values[tier.uid]"
+            (ngModelChange)="markDirty()" [disabled]="!row.valueEditable">
+        </div>
+      </ng-container>
+      <ng-template #numberCell>
+        <input type="number" min="0" class="form-control text-center number-cell mx-auto"
+          [(ngModel)]="row.values[tier.uid]" (ngModelChange)="markDirty()" [disabled]="!row.valueEditable"
+          placeholder="Unlimited">
+      </ng-template>
+    </td>
+
+    <td class="text-end action-col">
+      <ng-container *ngIf="row.kind === 'extra'; else fixedAction">
+        <div class="d-inline-flex gap-1">
+          <button type="button" class="btn btn-sm btn-light" title="Move up" (click)="moveExtra(row, -1)"
+            [disabled]="first"><i class="ri-arrow-up-line"></i></button>
+          <button type="button" class="btn btn-sm btn-light" title="Move down" (click)="moveExtra(row, 1)"
+            [disabled]="last"><i class="ri-arrow-down-line"></i></button>
+          <button type="button" class="btn btn-sm btn-soft-danger" title="Delete" (click)="deleteExtra(row)">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #fixedAction>
+        <i class="ri-lock-line text-muted" title="Default feature — cannot be deleted"></i>
+      </ng-template>
+    </td>
+  </tr>
+</ng-template>
