@@ -26,6 +26,13 @@ const ALLOWED_LIMIT_KEYS = [
 ];
 
 interface PlanTier {
+  /**
+   * Internal key for this plan's cells ("tier-0", "tier-1", ...). Always unique, so
+   * one plan's checkbox/number can never be bound to another plan's value even if
+   * the API returns a missing or duplicated id. Never sent to the API.
+   */
+  uid: string;
+  /** Plan id from the API; used only when building the save request. */
   id: number;
   name: string;
   description: string;
@@ -166,7 +173,8 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
     const apiTiers: any[] = Array.isArray(data?.tiers) ? data.tiers : [];
     apiTiers.sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
 
-    this.tiers = apiTiers.map(t => ({
+    this.tiers = apiTiers.map((t, index) => ({
+      uid: `tier-${index}`,
       id: t.id,
       name: t.name ?? '',
       description: t.description ?? '',
@@ -181,8 +189,8 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
 
     // Merge each tier's feature list into one row per feature key, keeping API order.
     const rowMap = new Map<string, FeatureRow>();
-    for (const tier of apiTiers) {
-      const tierKey = String(tier.id);
+    apiTiers.forEach((tier, tierIndex) => {
+      const tierKey = this.tiers[tierIndex].uid;
       for (const f of tier.features ?? []) {
         let row = rowMap.get(f.key);
         if (!row) {
@@ -203,13 +211,13 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
         }
         row.values[tierKey] = row.type === 'radio' ? !!f.value : (f.value ?? null);
       }
-    }
+    });
 
     // Tiers that don't list a feature get a default value so every cell is bound.
     const rows = Array.from(rowMap.values());
     for (const row of rows) {
       for (const tier of this.tiers) {
-        const k = String(tier.id);
+        const k = tier.uid;
         if (!(k in row.values)) {
           row.values[k] = row.type === 'radio' ? false : null;
         }
@@ -225,8 +233,29 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       ...(Array.isArray(data?.warnings) ? data.warnings : []),
       ...apiTiers.flatMap(t => Array.isArray(t.warnings) ? t.warnings : []),
     ];
+
+    // Saving needs a unique id per plan (tiers[].id and extras "values" keys).
+    this.tierIdProblem = this.findTierIdProblem();
+    if (this.tierIdProblem) {
+      console.warn('[SubscriptionFeatures] Invalid plan ids from API:', apiTiers.map(t => ({ id: t.id, slot: t.slot, name: t.name })));
+      this.warnings.push(this.tierIdProblem);
+    }
     this.dirty = false;
     this.cancelAdd();
+  }
+
+  /** Set when the API's plan ids are missing or duplicated; saving is blocked while set. */
+  tierIdProblem: string | null = null;
+
+  private findTierIdProblem(): string | null {
+    const ids = this.tiers.map(t => t.id);
+    if (ids.some(id => id === null || id === undefined || (id as any) === '')) {
+      return 'Some plans were returned without an ID, so changes cannot be saved. Please contact the backend team.';
+    }
+    if (new Set(ids.map(String)).size !== ids.length) {
+      return 'Several plans were returned with the same ID, so changes cannot be saved. Please contact the backend team.';
+    }
+    return null;
   }
 
   /** "max_safe_zones" / "real-time-location" -> "Max Safe Zones" / "Real Time Location" */
@@ -264,7 +293,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
     const type = this.newFeature.type;
     const values: Record<string, CellValue> = {};
     for (const tier of this.tiers) {
-      values[String(tier.id)] = type === 'radio' ? false : 0;
+      values[tier.uid] = type === 'radio' ? false : 0;
     }
     this.rows.push({
       id: null,
@@ -323,6 +352,9 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
   }
 
   private validate(): string | null {
+    if (this.tierIdProblem) {
+      return this.tierIdProblem;
+    }
     for (const tier of this.tiers) {
       if (!(tier.name || '').trim()) {
         return 'Plan name cannot be empty';
@@ -334,7 +366,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       }
       if (row.kind !== 'dud' && row.type === 'number') {
         for (const tier of this.tiers) {
-          const v = row.values[String(tier.id)];
+          const v = row.values[tier.uid];
           if (v !== null && v !== undefined && (v as any) !== '' && (!Number.isFinite(Number(v)) || Number(v) < 0)) {
             return `"${row.label}" must be a positive number or unlimited`;
           }
@@ -347,7 +379,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
   buildPayload(): any {
     const tiers: any[] = [];
     for (const tier of this.tiers) {
-      const tierKey = String(tier.id);
+      const tierKey = tier.uid;
       const entry: any = { id: tier.id };
 
       const name = tier.name.trim();
@@ -408,8 +440,9 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       const label = row.label.trim();
       if (row.isNew) {
         const values: Record<string, CellValue> = {};
+        // Internal uid -> API tier id for the request.
         for (const tier of this.tiers) {
-          values[String(tier.id)] = this.normalizeValue(row, row.values[String(tier.id)]);
+          values[String(tier.id)] = this.normalizeValue(row, row.values[tier.uid]);
         }
         create.push({ label, type: row.type, values, order });
         return;
@@ -418,10 +451,10 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
       // Existing extras: send only the tier values that changed.
       const changedValues: Record<string, CellValue> = {};
       for (const tier of this.tiers) {
-        const k = String(tier.id);
+        const k = tier.uid;
         const value = this.normalizeValue(row, row.values[k]);
         if (!original || value !== this.normalizeValue(row, original.values[k])) {
-          changedValues[k] = value;
+          changedValues[String(tier.id)] = value;
         }
       }
       const hasValueChanges = Object.keys(changedValues).length > 0;
@@ -511,7 +544,7 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
   }
 
   trackRow = (_: number, row: FeatureRow) => row.key;
-  trackTier = (_: number, tier: PlanTier) => tier.id;
+  trackTier = (_: number, tier: PlanTier) => tier.uid;
 
   ngOnDestroy(): void {
     this.destroy$.next();

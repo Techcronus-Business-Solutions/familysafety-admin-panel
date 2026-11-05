@@ -204,13 +204,13 @@
     <td *ngFor="let tier of tiers; trackBy: trackTier" class="text-center tier-col">
       <ng-container *ngIf="row.type === 'radio'; else numberCell">
         <div class="form-check form-switch d-inline-block m-0">
-          <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="row.values[tier.id]"
+          <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="row.values[tier.uid]"
             (ngModelChange)="markDirty()" [disabled]="!row.valueEditable">
         </div>
       </ng-container>
       <ng-template #numberCell>
         <input type="number" min="0" class="form-control text-center number-cell mx-auto"
-          [(ngModel)]="row.values[tier.id]" (ngModelChange)="markDirty()" [disabled]="!row.valueEditable"
+          [(ngModel)]="row.values[tier.uid]" (ngModelChange)="markDirty()" [disabled]="!row.valueEditable"
           placeholder="Unlimited">
       </ng-template>
     </td>
