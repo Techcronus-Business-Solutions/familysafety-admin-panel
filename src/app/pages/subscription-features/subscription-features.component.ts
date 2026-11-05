@@ -238,7 +238,6 @@ export class SubscriptionFeaturesComponent implements OnInit, OnDestroy {
     this.tierIdProblem = this.findTierIdProblem();
     if (this.tierIdProblem) {
       console.warn('[SubscriptionFeatures] Invalid plan ids from API:', apiTiers.map(t => ({ id: t.id, slot: t.slot, name: t.name })));
-      this.warnings.push(this.tierIdProblem);
     }
     this.dirty = false;
     this.cancelAdd();
