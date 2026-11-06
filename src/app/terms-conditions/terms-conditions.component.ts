@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
 import { GlobalComponent } from '../global-component';
 
 @Component({
@@ -14,7 +15,7 @@ export class TermsConditionsComponent implements OnInit {
   content: SafeHtml = '';
   loading = true;
 
-  constructor(private http: HttpClient, private sanitizer: DomSanitizer) { }
+  constructor(private http: HttpClient, private sanitizer: DomSanitizer, private translate: TranslateService) { }
 
   ngOnInit(): void {
     document.documentElement.setAttribute('data-preloader', 'disable');
@@ -26,9 +27,30 @@ export class TermsConditionsComponent implements OnInit {
       preloader.style.display = 'none';
     }
 
-    const params = new HttpParams().set('lang', 'en');
+    // Public endpoint: GET /api/languages/
+    this.http.get<any>(`${GlobalComponent.PUBLIC_API_URL}languages/`).subscribe({
+      next: (response: any) => {
+        const languages = Array.isArray(response) ? response : (response?.data ?? response?.languages ?? []);
+        this.loadTermsConditions(this.resolveLanguage(languages));
+      },
+      error: () => {
+        this.loadTermsConditions('en');
+      }
+    });
+  }
 
-    this.http.get<any>(`${GlobalComponent.API_URL}terms-conditions/`, { params }).subscribe({
+  /** Browser language if the API supports it, otherwise English. */
+  private resolveLanguage(languages: any[]): string {
+    const browserLang = (this.translate.getBrowserLang() || '').toLowerCase();
+    const supportedCodes = (languages || []).map((lang: any) => String(lang?.code ?? lang?.id ?? '').toLowerCase());
+    return supportedCodes.includes(browserLang) ? browserLang : 'en';
+  }
+
+  private loadTermsConditions(lang: string): void {
+    // Public endpoint: GET /api/terms-conditions/?lang=<code>
+    const params = new HttpParams().set('lang', lang);
+
+    this.http.get<any>(`${GlobalComponent.PUBLIC_API_URL}terms-conditions/`, { params }).subscribe({
       next: (response: any) => {
         const data = Array.isArray(response?.data) ? response.data[0] : (response?.data ?? response);
         this.content = this.sanitizer.bypassSecurityTrustHtml(data?.html ?? '');
