@@ -4,6 +4,9 @@ export const GlobalComponent = {
     // Api Calling
     API_URL: environment.apiUrl,
 
+    // Public (non-admin) Api: ".../api/admin/" -> ".../api/"
+    PUBLIC_API_URL: environment.apiUrl.replace(/admin\/?$/, ''),
+
     headerToken: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
 
     // Auth Api
