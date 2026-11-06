@@ -27,7 +27,8 @@ export class PrivacyPolicyComponent implements OnInit {
       preloader.style.display = 'none';
     }
 
-    this.http.get<any>(`${GlobalComponent.API_URL}languages/`).subscribe({
+    // Public endpoint: GET /api/languages/
+    this.http.get<any>(`${GlobalComponent.PUBLIC_API_URL}languages/`).subscribe({
       next: (response: any) => {
         const languages = Array.isArray(response) ? response : (response?.data ?? response?.languages ?? []);
         this.loadPrivacyPolicy(this.resolveLanguage(languages));
@@ -45,9 +46,10 @@ export class PrivacyPolicyComponent implements OnInit {
   }
 
   private loadPrivacyPolicy(lang: string): void {
+    // Public endpoint: GET /api/privacy-policy/?lang=<code>
     const params = new HttpParams().set('lang', lang);
 
-    this.http.get<any>(`${GlobalComponent.API_URL}privacy-policy/`, { params }).subscribe({
+    this.http.get<any>(`${GlobalComponent.PUBLIC_API_URL}privacy-policy/`, { params }).subscribe({
       next: (response: any) => {
         const data = Array.isArray(response?.data) ? response.data[0] : (response?.data ?? response);
         this.content = this.sanitizer.bypassSecurityTrustHtml(data?.html ?? '');
