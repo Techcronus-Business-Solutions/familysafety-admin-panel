@@ -18,6 +18,10 @@ export class PrivacyPolicyComponent implements OnInit {
   constructor(private http: HttpClient, private sanitizer: DomSanitizer, private translate: TranslateService) { }
 
   ngOnInit(): void {
+    if (!document.documentElement.hasAttribute('data-theme')) {
+      document.documentElement.setAttribute('data-theme', 'default');
+    }
+
     document.documentElement.setAttribute('data-preloader', 'disable');
 
     const preloader = document.getElementById('preloader');
