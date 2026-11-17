@@ -2,7 +2,7 @@
   <div class="row justify-content-center">
     <div class="col-lg-10 col-xl-8">
       <div *ngIf="loading" class="text-center py-5">Loading...</div>
-      <div *ngIf="!loading" [innerHTML]="content"></div>
+      <article *ngIf="!loading" class="legal-document" [innerHTML]="content"></article>
     </div>
   </div>
 </div>

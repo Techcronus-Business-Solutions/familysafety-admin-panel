@@ -465,3 +465,25 @@ bs-dropdown-container {
   max-height: 220px;
   overflow-y: auto;
 }
+
+.legal-document {
+  color: var(--tb-body-color);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+.legal-document :where(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.25;
+}
+
+.legal-document :where(p, ul, ol, blockquote, table) {
+  margin-bottom: 1rem;
+}
+
+.legal-document :where(img, video, iframe) {
+  max-width: 100%;
+}
+
+.legal-document :where(b, strong) {
+  font-weight: 700;
+}
