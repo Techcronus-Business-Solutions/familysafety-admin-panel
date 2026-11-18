@@ -1,11 +1,21 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { User } from '../../store/Users/user.model';
 import { GlobalComponent } from "../../global-component";
 import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 
 const API_URL = GlobalComponent.API_URL;
+
+export interface UsersExportRequest {
+  columns: string[];
+  search: string;
+  is_minor: string;
+  is_suspended: string;
+  filter_subs_status: string;
+  filter_country: string;
+  ordering: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -91,6 +101,30 @@ export class UserService {
 
     return this.http.get<any>(url, this.createHeaders(token)).pipe(
       map((response: any) => this.handleApiResponse(response, 200)),
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  exportUsers(token: string, payload: UsersExportRequest): Observable<HttpResponse<string>> {
+    const url = API_URL + 'user_list/export/';
+    const params = new HttpParams({
+      fromObject: {
+        columns: payload.columns.join(','),
+        search: payload.search,
+        is_minor: payload.is_minor,
+        is_suspended: payload.is_suspended,
+        filter_subs_status: payload.filter_subs_status,
+        filter_country: payload.filter_country,
+        ordering: payload.ordering
+      }
+    });
+
+    return this.http.get(url, {
+      ...this.createHeaders(token),
+      params,
+      observe: 'response',
+      responseType: 'text'
+    }).pipe(
       catchError((error: any) => this.handleError(error))
     );
   }

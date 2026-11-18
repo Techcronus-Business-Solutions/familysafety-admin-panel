@@ -82,6 +82,10 @@
     justify-content: center;
   }
 
+  tbody td:nth-child(4) {
+    white-space: normal;
+  }
+
   th:nth-child(1),
   td:nth-child(1) { width: 5%; }
   th:nth-child(2),
@@ -114,9 +118,8 @@
 
 .country-name {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: normal;
 }
 
 .actions-cell .d-flex {
@@ -125,16 +128,61 @@
 }
 
 .country-flag {
-  border: 1px solid var(--vz-border-color);
-  border-radius: 2px;
+  display: inline-block;
   flex-shrink: 0;
-  height: 15px;
-  object-fit: cover;
+  font-size: 1rem;
+  line-height: 1;
   width: 20px;
 }
 
 .country-filter {
-  min-width: 200px;
+  flex: 0 0 220px;
+  max-width: 220px;
+  min-width: 220px;
+  width: 220px;
+}
+
+.country-option {
+  align-items: flex-start;
+  min-width: 0;
+  width: 100%;
+}
+
+.country-option-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: normal;
+  white-space: normal;
+  word-break: normal;
+}
+
+:host ::ng-deep .country-filter .ng-select-container {
+  height: auto;
+  min-height: 38px;
+}
+
+:host ::ng-deep .country-filter .ng-value-container {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+:host ::ng-deep .country-filter .ng-value,
+:host ::ng-deep .country-filter .ng-dropdown-panel .ng-option {
+  max-width: 100%;
+  white-space: normal;
+}
+
+:host ::ng-deep .country-filter .ng-value {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+:host ::ng-deep .country-filter .ng-dropdown-panel .ng-option {
+  height: auto;
+}
+
+:host ::ng-deep .country-filter .ng-dropdown-panel .ng-option .country-option {
+  white-space: normal;
 }
 
 // .user-table-head {
@@ -187,5 +235,28 @@
     font-size: 10px;
     font-weight: 600;
     text-transform: none;
+  }
+}
+
+.th-date-sort {
+  width: 100%;
+  max-width: 100%;
+  align-items: stretch;
+}
+
+.th-date-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+
+  small {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .sort-icon {
+    font-size: 0.8rem;
   }
 }

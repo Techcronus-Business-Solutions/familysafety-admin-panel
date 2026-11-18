@@ -23,3 +23,70 @@
     text-transform: none;
   }
 }
+
+.phone-input-group {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.phone-country-select {
+  flex: 0 0 110px;
+  width: 110px;
+}
+
+.phone-number-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: auto;
+  min-height: 38px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+:host ::ng-deep .phone-country-select .ng-select-container {
+  min-height: 38px;
+  height: auto;
+  align-items: center;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+:host ::ng-deep .phone-country-select .ng-value-container {
+  align-items: center;
+  min-width: 0;
+  white-space: normal;
+}
+
+:host ::ng-deep .phone-country-select .ng-value {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  white-space: normal;
+}
+
+:host ::ng-deep .phone-country-select .ng-dropdown-panel {
+  min-width: 260px;
+}
+
+.phone-country-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.phone-country-flag,
+.phone-country-dial {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.phone-country-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}

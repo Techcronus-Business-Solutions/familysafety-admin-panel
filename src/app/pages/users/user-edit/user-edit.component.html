@@ -15,13 +15,28 @@
       <div class="mb-3">
         <label class="form-label">Phone</label>
         <div class="d-flex phone-input-group">
-          <ng-select class="country-code-select" [items]="countryCodes" formControlName="country_code"
-            bindValue="dialCode" bindLabel="dialCode" [clearable]="false" [searchable]="true"
+          <ng-select class="country-code-select" [items]="countryCodes" formControlName="country_iso_code"
+            bindValue="isoCode" bindLabel="name" [clearable]="false" [searchable]="true"
             aria-label="Country code">
-            <ng-template ng-label-tmp let-item="item">{{ item.dialCode }}</ng-template>
-            <ng-template ng-option-tmp let-item="item">{{ item.dialCode }}</ng-template>
+            <ng-template ng-label-tmp let-item="item">
+              <span class="country-option">
+                <span class="country-flag" aria-hidden="true">{{ item.flag }}</span>
+                <span class="country-option-name">{{ item.name }}</span>
+                <span class="country-dial">({{ item.dial }})</span>
+              </span>
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              <span class="country-option">
+                <span class="country-flag" aria-hidden="true">{{ item.flag }}</span>
+                <span class="country-option-name">{{ item.name }}</span>
+                <span class="country-dial">{{ item.dial }}</span>
+              </span>
+            </ng-template>
           </ng-select>
           <input class="form-control" formControlName="phone_number" placeholder="Phone number">
+        </div>
+        <div class="text-danger small mt-1" *ngIf="form.get('country_iso_code')?.hasError('invalidCountry')">
+          Select a valid country from the list.
         </div>
       </div>
       <!-- <div class="mb-3">

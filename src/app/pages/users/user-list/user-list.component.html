@@ -57,18 +57,20 @@
                 <div class="d-flex align-items-center gap-1">
                   <label class="mb-0 text-nowrap">Country</label>
                   <ng-select title="Filter by Country" class="country-filter" [items]="countryOptions"
-                    bindLabel="name" bindValue="code" [(ngModel)]="filterCountry" [clearable]="true"
+                    bindLabel="name" bindValue="isoCode" [(ngModel)]="filterCountry" [clearable]="true"
                     [searchable]="true" placeholder="All Countries" (change)="onFilterChange()">
                     <ng-template ng-label-tmp let-item="item">
-                      <div class="d-flex align-items-center gap-2">
-                        <img [src]="item.flag" [alt]="item.name + ' flag'" class="country-flag">
-                        <span>{{ item.name }}</span>
+                      <div class="country-option d-flex align-items-center gap-2">
+                        <span class="iti__flag country-flag" [ngClass]="'iti__' + item.isoCode.toLowerCase()"
+                          aria-hidden="true"></span>
+                        <span class="country-option-name">{{ item.name }}</span>
                       </div>
                     </ng-template>
                     <ng-template ng-option-tmp let-item="item">
-                      <div class="d-flex align-items-center gap-2">
-                        <img [src]="item.flag" [alt]="item.name + ' flag'" class="country-flag">
-                        <span>{{ item.name }}</span>
+                      <div class="country-option d-flex align-items-center gap-2">
+                        <span class="iti__flag country-flag" [ngClass]="'iti__' + item.isoCode.toLowerCase()"
+                          aria-hidden="true"></span>
+                        <span class="country-option-name">{{ item.name }}</span>
                       </div>
                     </ng-template>
                   </ng-select>
@@ -78,6 +80,9 @@
                     (input)="onSearchInput()">
                   <i class="ri-search-line search-icon ms-2"></i>
                 </div>
+                <button type="button" class="btn btn-primary btn-sm" (click)="openExportModal()">
+                  <i class="ri-download-2-line me-1"></i>Export
+                </button>
               </div>
             </div>
           </div>
@@ -99,39 +104,55 @@
                       <i class="sort-icon" [ngClass]="getSortIcon('email')"></i>
                     </span>
                   </th>
-                  <th scope="col">Country</th>
+                  <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('country')">
+                    <span class="th-content">
+                      <span>Country</span>
+                      <i class="sort-icon" [ngClass]="getSortIcon('country')"></i>
+                    </span>
+                  </th>
                   <th scope="col">Phone Number</th>
                   <th scope="col">
                     <span>Subscription Status</span>
                   </th>
-                  <th scope="col">
-                    <span class="th-date">
+                  <th scope="col" class="cursor-pointer sortable-heading"
+                    (click)="onSort('subscription_start_date')">
+                    <span class="th-date-sort">
                       <span>Subscription Start Date</span>
-                      <small>(DD/MM/YYYY)</small>
+                      <span class="th-date-meta">
+                        <small>(DD/MM/YYYY)</small>
+                        <i class="sort-icon" [ngClass]="getSortIcon('subscription_start_date')"></i>
+                      </span>
                     </span>
                   </th>
-                  <th scope="col">
-                    <span class="th-date">
+                  <th scope="col" class="cursor-pointer sortable-heading"
+                    (click)="onSort('subscription_end_date')">
+                    <span class="th-date-sort">
                       <span>Subscription End Date</span>
-                      <small>(DD/MM/YYYY)</small>
+                      <span class="th-date-meta">
+                        <small>(DD/MM/YYYY)</small>
+                        <i class="sort-icon" [ngClass]="getSortIcon('subscription_end_date')"></i>
+                      </span>
                     </span>
                   </th>
                   <th scope="col">Minor</th>
                   <th scope="col">User Status</th>
-                  <th scope="col">
-                    <span class="th-date">
+                  <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('registration_date')">
+                    <span class="th-date-sort">
                       <span>Registration Date</span>
-                      <small>(DD/MM/YYYY)</small>
+                      <span class="th-date-meta">
+                        <small>(DD/MM/YYYY)</small>
+                        <i class="sort-icon" [ngClass]="getSortIcon('registration_date')"></i>
+                      </span>
                     </span>
                   </th>
                   <th scope="col">Suspended By</th>
                   <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('last_active')">
                     <span class="th-date-sort">
-                      <span class="th-content">
-                        <span>Last Active Date</span>
+                      <span>Last Active Date</span>
+                      <span class="th-date-meta">
+                        <small>(DD/MM/YYYY HH:MM)</small>
                         <i class="sort-icon" [ngClass]="getSortIcon('last_active')"></i>
                       </span>
-                      <small>(DD/MM/YYYY HH:MM)</small>
                     </span>
                   </th>
                   <th scope="col">Action</th>
@@ -160,11 +181,11 @@
                     <span [title]="user.full_name">{{ user.full_name }}</span>
                   </td>
                   <td class="email" [title]="user.email">{{ user.email }}</td>
-                  <td [title]="user.country">
+                  <td [title]="getCountryName(user.country)">
                     <div class="d-flex align-items-center gap-2">
-                      <img *ngIf="getCountryFlag(user.country) as countryFlag" [src]="countryFlag"
-                        [alt]="user.country + ' flag'" class="country-flag">
-                      <span class="country-name">{{ user.country ?? '-' }}</span>
+                      <span *ngIf="getCountryFlagClass(user.country) as countryFlagClass"
+                        class="iti__flag country-flag" [ngClass]="countryFlagClass" aria-hidden="true"></span>
+                      <span class="country-name">{{ getCountryName(user.country) }}</span>
                     </div>
                   </td>
                   <td class="phone" [title]="user.phone_number">{{ user.phone_number }}</td>
@@ -259,3 +280,40 @@
   <!-- end col -->
 </div>
 <!-- end row -->
+
+<div *ngIf="showExportModal" class="modal-backdrop fade show" (click)="closeExportModal()"></div>
+<div *ngIf="showExportModal" class="modal fade show d-block" id="exportUsersModal" tabindex="-1"
+  role="dialog" aria-modal="true" aria-labelledby="exportUsersModalLabel" (click)="closeExportModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exportUsersModalLabel">Export Users</h5>
+        <button type="button" class="btn-close" aria-label="Close" [disabled]="exporting"
+          (click)="closeExportModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2">
+          <div class="col-sm-6" *ngFor="let column of exportColumns">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [id]="'export-column-' + column.key"
+                [disabled]="exporting"
+                [(ngModel)]="column.selected">
+              <label class="form-check-label" [for]="'export-column-' + column.key">
+                {{ column.label }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" [disabled]="exporting" (click)="closeExportModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!hasSelectedExportColumns || exporting"
+          (click)="exportUsers()">
+          <span *ngIf="exporting" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <i *ngIf="!exporting" class="ri-download-2-line me-1"></i>
+          {{ exporting ? 'Exporting...' : 'Export' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

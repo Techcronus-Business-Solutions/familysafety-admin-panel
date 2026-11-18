@@ -8,3 +8,68 @@ input.form-control[readonly] {
 [data-bs-theme="dark"] input.form-control[readonly] {
   background-color: #2c2e30 !important;
 }
+
+.country-code-select {
+  flex: 0 0 180px;
+  min-width: 180px;
+}
+
+.country-option {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.country-flag {
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.country-option-name {
+  flex: 1 1 0%;
+  min-width: 0;
+  white-space: normal;
+  word-break: normal;
+}
+
+.country-dial {
+  color: var(--vz-secondary-color);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .country-code-select .ng-select-container {
+  height: auto;
+  min-height: 38px;
+}
+
+:host ::ng-deep .country-code-select .ng-value-container,
+:host ::ng-deep .country-code-select .ng-value {
+  min-width: 0;
+}
+
+:host ::ng-deep .country-code-select .ng-value-container {
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .country-code-select .ng-value {
+  display: block;
+  flex: 1 1 0%;
+  max-width: 100%;
+  white-space: normal;
+}
+
+:host ::ng-deep .country-code-select .ng-value-label {
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+:host ::ng-deep .country-code-select .ng-dropdown-panel .ng-option {
+  height: auto;
+  white-space: normal;
+}

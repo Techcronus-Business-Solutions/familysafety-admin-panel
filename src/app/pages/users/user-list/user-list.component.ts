@@ -13,16 +13,31 @@ import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { ListStateService } from 'src/app/core/services/list-state.service';
-import { COUNTRY_CODES } from 'src/app/shared/data/country-codes';
+import { COUNTRY_CODES, findCountryByName } from 'src/app/shared/data/country-codes';
+import { UserService, UsersExportRequest } from '../user.service';
 
-const COUNTRY_FLAG_CODES = new Map<string, string>();
-COUNTRY_CODES.forEach(({ name, iso2 }) => {
-  COUNTRY_FLAG_CODES.set(name.toLowerCase(), iso2);
-  COUNTRY_FLAG_CODES.set(iso2.toLowerCase(), iso2);
-});
-COUNTRY_FLAG_CODES.set('united states', 'us');
-COUNTRY_FLAG_CODES.set('usa', 'us');
-COUNTRY_FLAG_CODES.set('uk', 'gb');
+type UserSortField =
+  | 'full_name'
+  | 'email'
+  | 'last_active'
+  | 'registration_date'
+  | 'country'
+  | 'subscription_end_date'
+  | 'subscription_start_date';
+
+const USER_SORT_FIELDS: readonly UserSortField[] = [
+  'full_name',
+  'email',
+  'last_active',
+  'registration_date',
+  'country',
+  'subscription_end_date',
+  'subscription_start_date'
+];
+
+function isUserSortField(field: string): field is UserSortField {
+  return USER_SORT_FIELDS.some(sortableField => sortableField === field);
+}
 
 @Component({
   selector: 'app-user-list',
@@ -56,23 +71,36 @@ export class UserListComponent implements OnDestroy {
   totalUsers: number = 0;
   pageSize: number = 10;
   pageSizeOptions = [10, 50, 100];
-  countryOptions = COUNTRY_CODES.map(({ name, iso2 }) => ({
-    name,
-    code: iso2.toUpperCase(),
-    flag: `assets/images/flags/${iso2}.svg`
-  }));
+  countryOptions = COUNTRY_CODES;
   itemsPerPage: number = 10;
   ordering: string = '';
-  sortField: 'full_name' | 'email' | 'last_active' | '' = '';
+  sortField: UserSortField | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   isMinor: string = '';
   statusFilter: string = '';
   filterSubsStatus: string = '';
   filterCountry: string | null = null;
+  showExportModal = false;
+  exporting = false;
+  exportColumns = [
+    { key: 'full_name', label: 'Full Name', selected: true },
+    { key: 'email', label: 'Email', selected: true },
+    { key: 'country', label: 'Country', selected: true },
+    { key: 'phone_number', label: 'Phone Number', selected: true },
+    { key: 'subscription_details.subs_status', label: 'Subscription Status', selected: true },
+    { key: 'subscription_details.start_date', label: 'Subscription Start Date', selected: true },
+    { key: 'subscription_details.end_date', label: 'Subscription End Date', selected: true },
+    { key: 'is_minor', label: 'Minor', selected: true },
+    { key: 'user_status', label: 'User Status', selected: true },
+    { key: 'date_joined', label: 'Registration Date', selected: true },
+    { key: 'suspended_by', label: 'Suspended By', selected: true },
+    { key: 'last_active', label: 'Last Active Date', selected: true }
+  ];
+  exportPayload: UsersExportRequest | null = null;
   private destroy$ = new Subject<void>();
   private searchTimeout: any;
 
-  constructor(private formBuilder: UntypedFormBuilder, public store: Store, public datepipe: DatePipe, private router: Router, private listState: ListStateService, private actions$: Actions) {
+  constructor(private formBuilder: UntypedFormBuilder, public store: Store, public datepipe: DatePipe, private router: Router, private listState: ListStateService, private actions$: Actions, private userService: UserService) {
   }
 
   ngOnInit(): void {
@@ -162,9 +190,13 @@ export class UserListComponent implements OnDestroy {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  getCountryFlag(country?: string): string | null {
-    const iso2 = country ? COUNTRY_FLAG_CODES.get(country.trim().toLowerCase()) : undefined;
-    return iso2 ? `assets/images/flags/${iso2}.svg` : null;
+  getCountryFlagClass(country?: string): string | null {
+    const isoCode = findCountryByName(country)?.isoCode;
+    return isoCode ? `iti__${isoCode.toLowerCase()}` : null;
+  }
+
+  getCountryName(country?: string): string {
+    return findCountryByName(country)?.name ?? country ?? '-';
   }
 
   getSubscriptionStatus(user: any): string {
@@ -273,7 +305,7 @@ export class UserListComponent implements OnDestroy {
     }
   }
 
-  onSort(field: 'full_name' | 'email' | 'last_active') {
+  onSort(field: UserSortField) {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -285,7 +317,7 @@ export class UserListComponent implements OnDestroy {
     this.loadUsers();
   }
 
-  getSortIcon(field: 'full_name' | 'email' | 'last_active'): string {
+  getSortIcon(field: UserSortField): string {
     if (this.sortField !== field) {
       return 'ri-arrow-up-down-line';
     }
@@ -297,12 +329,82 @@ export class UserListComponent implements OnDestroy {
     this.loadUsers();
   }
 
+  openExportModal(): void {
+    this.showExportModal = true;
+  }
+
+  closeExportModal(): void {
+    if (!this.exporting) {
+      this.showExportModal = false;
+    }
+  }
+
+  get hasSelectedExportColumns(): boolean {
+    return this.exportColumns.some(column => column.selected);
+  }
+
+  exportUsers(): void {
+    const columns = this.exportColumns.filter(column => column.selected).map(column => column.key);
+    if (!columns.length) {
+      return;
+    }
+
+    const payload: UsersExportRequest = {
+      columns,
+      search: this.term || '',
+      is_minor: this.isMinor || '',
+      is_suspended: this.statusFilter || '',
+      filter_subs_status: this.filterSubsStatus || '',
+      filter_country: this.filterCountry || '',
+      ordering: this.ordering || ''
+    };
+    this.exportPayload = payload;
+    this.exporting = true;
+
+    this.userService.exportUsers(localStorage.getItem('token') || '', payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: response => {
+          this.exporting = false;
+          if (response.body === null) {
+            Swal.fire('Export failed', 'The export response did not contain CSV data.', 'error');
+            return;
+          }
+
+          const blob = new Blob([response.body], { type: 'text/csv;charset=utf-8' });
+          const downloadUrl = URL.createObjectURL(blob);
+          const downloadLink = document.createElement('a');
+          downloadLink.href = downloadUrl;
+          downloadLink.download = this.getExportFileName(response.headers.get('Content-Disposition'));
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          downloadLink.remove();
+          window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+          this.closeExportModal();
+        },
+        error: (error: unknown) => {
+          this.exporting = false;
+          const message = typeof error === 'string' ? error : 'Unable to export users. Please try again.';
+          Swal.fire('Export failed', message, 'error');
+        }
+      });
+  }
+
+  private getExportFileName(contentDisposition: string | null): string {
+    const fileName = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1];
+    if (!fileName) {
+      return 'users.csv';
+    }
+    return fileName.toLowerCase().endsWith('.csv') ? fileName : `${fileName}.csv`;
+  }
+
   private setOrderingState(ordering: string) {
     this.ordering = ordering;
-    const field = ordering.replace('-', '');
-    if (field === 'full_name' || field === 'email' || field === 'last_active') {
-      this.sortField = field as 'full_name' | 'email' | 'last_active';
-      this.sortDirection = ordering.startsWith('-') ? 'desc' : 'asc';
+    const descending = ordering.startsWith('-');
+    const field = descending ? ordering.slice(1) : ordering;
+    if (isUserSortField(field)) {
+      this.sortField = field;
+      this.sortDirection = descending ? 'desc' : 'asc';
     } else {
       this.sortField = '';
       this.sortDirection = 'asc';
