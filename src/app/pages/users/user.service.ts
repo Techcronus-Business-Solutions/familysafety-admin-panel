@@ -58,7 +58,7 @@ export class UserService {
     return throwError(() => this.parseApiError(error));
   }
 
-  getUsers(token: string, page?: number, search?: string, per_page?: number, ordering?: string, is_minor?: string, status?: string): Observable<any> {
+  getUsers(token: string, page?: number, search?: string, per_page?: number, ordering?: string, is_minor?: string, is_suspended?: string, filter_subs_status?: string, filter_country?: string): Observable<any> {
     let url = API_URL + 'user_list';
     const params: string[] = [];
     if (page) {
@@ -76,8 +76,14 @@ export class UserService {
     if (is_minor !== undefined && is_minor !== '') {
       params.push(`is_minor=${is_minor}`);
     }
-    if (status !== undefined && status !== '') {
-      params.push(`status=${status}`);
+    if (is_suspended !== undefined && is_suspended !== '') {
+      params.push(`is_suspended=${encodeURIComponent(is_suspended)}`);
+    }
+    if (filter_subs_status) {
+      params.push(`filter_subs_status=${encodeURIComponent(filter_subs_status)}`);
+    }
+    if (filter_country) {
+      params.push(`filter_country=${encodeURIComponent(filter_country)}`);
     }
     if (params.length) {
       url += '?' + params.join('&');

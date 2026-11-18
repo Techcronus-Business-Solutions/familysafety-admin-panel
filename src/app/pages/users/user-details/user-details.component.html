@@ -1,4 +1,4 @@
-<div *ngIf="userdetails; else loadingTpl">
+<div *ngIf="detailsLoaded && userdetails; else loadingTpl">
 
   <!-- Page header -->
   <div class="d-flex align-items-center justify-content-between mb-4">
@@ -53,9 +53,21 @@
                 {{ userdetails.is_minor ? 'Yes' : 'No' }}
               </span>
             </div>
-            <div class="d-flex justify-content-between py-2" *ngIf="userdetails.social_provider">
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-muted fs-sm">Date of Birth</span>
+              <span class="fw-medium fs-sm">{{ userdetails.date_of_birth ? (userdetails.date_of_birth | date:'dd/MM/yyyy') : '-' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-muted fs-sm">Active Device</span>
+              <span class="fw-medium fs-sm">{{ userdetails.active_device ?? '-' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-muted fs-sm">Selected Language</span>
+              <span class="fw-medium fs-sm">{{ userdetails.language ?? '-' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2">
               <span class="text-muted fs-sm">Social Login</span>
-              <span class="fw-medium fs-sm text-capitalize">{{ userdetails.social_provider }}</span>
+              <span class="fw-medium fs-sm text-capitalize">{{ socialLoginDisplay }}</span>
             </div>
           </div>
         </div>
@@ -93,7 +105,7 @@
                 <label class="form-label fw-semibold">Phone Number</label>
                 <ngx-intl-tel-input [cssClass]="'form-control'" [enablePlaceholder]="true" [searchCountryFlag]="true"
                   [searchCountryField]="[SearchCountryField.Name, SearchCountryField.DialCode]"
-                  [selectedCountryISO]="CountryISO.India" [separateDialCode]="true" [phoneValidation]="true"
+                  [selectedCountryISO]="$any(selectedCountryISO)" [separateDialCode]="true" [phoneValidation]="true"
                   [maxLength]="15" inputId="phone_number" name="phone_number" formControlName="phone_number">
                 </ngx-intl-tel-input>
                 <div *ngIf="form.get('phone_number')?.invalid && form.get('phone_number')?.touched"
@@ -147,12 +159,6 @@
                 </span>
               </p>
             </div>
-            @if (subscriptionDetails.payment_source) {
-            <div class="col-md-4">
-              <label class="form-label fw-semibold text-muted">Payment Source</label>
-              <p class="mb-0 fw-medium text-capitalize">{{ subscriptionDetails.payment_source }}</p>
-            </div>
-            }
             <!-- @if (subscriptionDetails.trial_start_at) {
             <div class="col-md-4">
               <label class="form-label fw-semibold text-muted">Trial Start</label>
@@ -165,16 +171,22 @@
               <p class="mb-0 fw-medium">{{ subscriptionDetails.trial_end_at | date:'yyyy-MM-dd' }}</p>
             </div>
             } -->
-            @if (subscriptionDetails.current_period_start) {
+            @if (subscriptionStartDate) {
             <div class="col-md-4">
-              <label class="form-label fw-semibold text-muted">Period Start (DD/MM/YYYY)</label>
-              <p class="mb-0 fw-medium">{{ subscriptionDetails.current_period_start | date:'dd/MM/yyyy' }}</p>
+              <label class="form-label fw-semibold text-muted">Subscription Start Date (DD/MM/YYYY)</label>
+              <p class="mb-0 fw-bold">{{ subscriptionStartDate | date:'dd/MM/yyyy' }}</p>
             </div>
             }
-            @if (subscriptionDetails.current_period_end) {
+            @if (subscriptionEndDate) {
             <div class="col-md-4">
-              <label class="form-label fw-semibold text-muted">Period End (DD/MM/YYYY)</label>
-              <p class="mb-0 fw-medium">{{ subscriptionDetails.current_period_end | date:'dd/MM/yyyy' }}</p>
+              <label class="form-label fw-semibold text-muted">Subscription End Date (DD/MM/YYYY)</label>
+              <p class="mb-0 fw-bold">{{ subscriptionEndDate | date:'dd/MM/yyyy' }}</p>
+            </div>
+            }
+            @if (subscriptionDetails.payment_source) {
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted">Payment Source</label>
+              <p class="mb-0 fw-medium text-capitalize">{{ subscriptionDetails.payment_source }}</p>
             </div>
             }
           </div>
@@ -389,10 +401,15 @@
   </div>
 </div>
 <ng-template #loadingTpl>
-  <div class="text-center py-5">
+  <div *ngIf="detailsLoading; else detailsErrorTpl" class="text-center py-5">
     <div class="spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
     <p class="mt-2">Loading user details...</p>
   </div>
+  <ng-template #detailsErrorTpl>
+    <div class="alert alert-danger mt-3" role="alert">
+      {{ detailsError || 'Unable to load user details.' }}
+    </div>
+  </ng-template>
 </ng-template>

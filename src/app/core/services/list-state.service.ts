@@ -5,6 +5,8 @@ export interface ListState {
   per_page: number;
   search?: string;
   ordering?: string;
+  filter_subs_status?: string;
+  filter_country?: string;
 }
 
 type ListStateKey = 'users' | 'subscriptions' | 'group';

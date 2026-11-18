@@ -289,12 +289,37 @@ export function splitPhoneNumber(fullNumber: string | null | undefined): { dialC
  * form control: the bare national number plus the ISO2 country code. Passing
  * it a full combined string directly leaves the dial code duplicated in the
  * visible input, since the component only strips it from objects, not strings.
+ * When provided, the API country determines the selected country, including
+ * cases where multiple countries share a dial code.
  */
-export function toNgxIntlTelInputValue(fullNumber: string | null | undefined): { number: string; countryCode: string } | null {
+export function toNgxIntlTelInputValue(fullNumber: string | null | undefined, countryName?: string | null): { number: string; countryCode: string } | null {
   if (!fullNumber) {
     return null;
   }
-  const { dialCode, number } = splitPhoneNumber(fullNumber);
+  const normalizedCountryName = countryName?.trim().toLowerCase();
+  const value = fullNumber.trim();
+  const apiCountry = COUNTRY_CODES.find(c =>
+    c.name.toLowerCase() === normalizedCountryName || c.iso2.toLowerCase() === normalizedCountryName
+  );
+  if (apiCountry) {
+    let number = value;
+    if (value.startsWith(apiCountry.dialCode)) {
+      number = value.slice(apiCountry.dialCode.length);
+    } else if (value.startsWith('+')) {
+      number = splitPhoneNumber(value).number;
+    }
+    return { number, countryCode: apiCountry.iso2.toUpperCase() };
+  }
+
+  if (!value.startsWith('+')) {
+    return { number: value, countryCode: '' };
+  }
+
+  if (!COUNTRY_CODES.some(c => value.startsWith(c.dialCode))) {
+    return { number: value, countryCode: '' };
+  }
+
+  const { dialCode, number } = splitPhoneNumber(value);
   const country = COUNTRY_CODES.find(c => c.dialCode === dialCode);
-  return { number, countryCode: (country?.iso2 ?? 'in').toUpperCase() };
+  return { number, countryCode: country?.iso2.toUpperCase() ?? '' };
 }
