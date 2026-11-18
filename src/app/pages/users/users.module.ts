@@ -2,6 +2,7 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { UsersRoutingModule } from './users-routing.module';
 import { UserListComponent } from './user-list/user-list.component';
@@ -15,6 +16,7 @@ import { SharedModule } from '../../shared/shared.module';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    NgSelectModule,
     PaginationModule.forRoot(),
     SharedModule,
     UsersRoutingModule

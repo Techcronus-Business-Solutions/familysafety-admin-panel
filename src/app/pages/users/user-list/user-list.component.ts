@@ -12,6 +12,16 @@ import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { ListStateService } from 'src/app/core/services/list-state.service';
+import { COUNTRY_CODES } from 'src/app/shared/data/country-codes';
+
+const COUNTRY_FLAG_CODES = new Map<string, string>();
+COUNTRY_CODES.forEach(({ name, iso2 }) => {
+  COUNTRY_FLAG_CODES.set(name.toLowerCase(), iso2);
+  COUNTRY_FLAG_CODES.set(iso2.toLowerCase(), iso2);
+});
+COUNTRY_FLAG_CODES.set('united states', 'us');
+COUNTRY_FLAG_CODES.set('usa', 'us');
+COUNTRY_FLAG_CODES.set('uk', 'gb');
 
 @Component({
   selector: 'app-user-list',
@@ -44,12 +54,19 @@ export class UserListComponent implements OnDestroy {
   totalUsers: number = 0;
   pageSize: number = 10;
   pageSizeOptions = [10, 50, 100];
+  countryOptions = COUNTRY_CODES.map(({ name, iso2 }) => ({
+    name,
+    code: iso2.toUpperCase(),
+    flag: `assets/images/flags/${iso2}.svg`
+  }));
   itemsPerPage: number = 10;
   ordering: string = '';
   sortField: 'full_name' | 'email' | 'last_active' | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   isMinor: string = '';
   statusFilter: string = '';
+  filterSubsStatus: string = '';
+  filterCountry: string | null = null;
   private destroy$ = new Subject<void>();
   private searchTimeout: any;
 
@@ -81,6 +98,8 @@ export class UserListComponent implements OnDestroy {
     this.currentPage = savedState.page;
     this.pageSize = savedState.per_page;
     this.term = savedState.search || '';
+    this.filterSubsStatus = savedState.filter_subs_status || '';
+    this.filterCountry = savedState.filter_country || null;
     this.setOrderingState(savedState.ordering || '');
     this.loadUsers();
     console.log("User Current Page:- ", this.currentPage, "Page Size:- ", this.pageSize, "Search Term:- ", this.term, "Ordering:- ", this.ordering);
@@ -134,6 +153,73 @@ export class UserListComponent implements OnDestroy {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
+  getCountryFlag(country?: string): string | null {
+    const iso2 = country ? COUNTRY_FLAG_CODES.get(country.trim().toLowerCase()) : undefined;
+    return iso2 ? `assets/images/flags/${iso2}.svg` : null;
+  }
+
+  getSubscriptionStatus(user: any): string {
+    const status = user?.subscription_details?.subs_status?.trim().toLowerCase();
+    if (!status || status === 'no') {
+      return 'No';
+    }
+
+    switch (status) {
+      case 'trial':
+      case 'trialing':
+        return 'Trial';
+      case 'active':
+        return 'Active';
+      case 'expired':
+        return 'Expired';
+      case 'cancelled':
+      case 'canceled':
+        return 'Cancelled';
+      case 'referral_grace':
+        return 'Referral Grace';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  }
+
+  getSubscriptionStatusClass(user: any): string {
+    const status = user?.subscription_details?.subs_status?.trim().toLowerCase();
+    switch (status) {
+      case 'trial':
+      case 'trialing':
+        return 'bg-warning-subtle text-warning';
+      case 'active':
+        return 'bg-success-subtle text-success';
+      case 'expired':
+      case 'cancelled':
+      case 'canceled':
+        return 'bg-danger-subtle text-danger';
+      case 'referral_grace':
+        return 'bg-info-subtle text-info';
+      default:
+        return 'bg-secondary-subtle text-secondary';
+    }
+  }
+
+  get paginationPages(): Array<number | null> {
+    const totalPages = Math.max(1, this.totalPages);
+    const currentPage = Math.min(Math.max(1, this.currentPage), totalPages);
+
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, null, totalPages];
+    }
+
+    if (currentPage >= totalPages - 3) {
+      return [1, null, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+
+    return [1, null, currentPage - 1, currentPage, currentPage + 1, null, totalPages];
+  }
+
   onSearch(value: string) {
     this.term = value;
     this.currentPage = 1;
@@ -170,6 +256,12 @@ export class UserListComponent implements OnDestroy {
     const page = (event && event.page) ? event.page : (typeof event === 'number' ? event : 1);
     this.currentPage = page;
     this.loadUsers();
+  }
+
+  onPaginationItemClick(page: number | null): void {
+    if (page !== null) {
+      this.tablepageChanged(page);
+    }
   }
 
   onSort(field: 'full_name' | 'email' | 'last_active') {
@@ -213,7 +305,9 @@ export class UserListComponent implements OnDestroy {
       page: this.currentPage,
       per_page: this.pageSize,
       search: this.term || '',
-      ordering: this.ordering || ''
+      ordering: this.ordering || '',
+      filter_subs_status: this.filterSubsStatus,
+      filter_country: this.filterCountry || ''
     });
     this.store.dispatch(loadUsers({
       page: this.currentPage,
@@ -221,7 +315,9 @@ export class UserListComponent implements OnDestroy {
       search: this.term,
       ordering: this.ordering || undefined,
       is_minor: this.isMinor || undefined,
-      status: this.statusFilter || undefined
+      is_suspended: this.statusFilter || undefined,
+      filter_subs_status: this.filterSubsStatus || undefined,
+      filter_country: this.filterCountry || undefined
     }));
   }
 
@@ -237,7 +333,7 @@ export class UserListComponent implements OnDestroy {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.store.dispatch(userSuspend({ id, page: this.currentPage, per_page: this.pageSize, search: this.term, ordering: this.ordering || undefined, is_minor: this.isMinor || undefined, status: this.statusFilter || undefined }));
+        this.store.dispatch(userSuspend({ id, page: this.currentPage, per_page: this.pageSize, search: this.term, ordering: this.ordering || undefined, is_minor: this.isMinor || undefined, is_suspended: this.statusFilter || undefined, filter_subs_status: this.filterSubsStatus || undefined, filter_country: this.filterCountry || undefined }));
       }
     });
   }
@@ -254,7 +350,7 @@ export class UserListComponent implements OnDestroy {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.store.dispatch(userUnsuspend({ id, page: this.currentPage, per_page: this.pageSize, search: this.term, ordering: this.ordering || undefined, is_minor: this.isMinor || undefined, status: this.statusFilter || undefined }));
+        this.store.dispatch(userUnsuspend({ id, page: this.currentPage, per_page: this.pageSize, search: this.term, ordering: this.ordering || undefined, is_minor: this.isMinor || undefined, is_suspended: this.statusFilter || undefined, filter_subs_status: this.filterSubsStatus || undefined, filter_country: this.filterCountry || undefined }));
       }
     });
   }
@@ -271,8 +367,7 @@ export class UserListComponent implements OnDestroy {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        const is_suspended = this.statusFilter === 'suspended' ? 'true' : this.statusFilter === 'active' ? 'false' : undefined;
-        this.store.dispatch(deleteUser({ id, page: this.currentPage, per_page: this.pageSize, search: this.term, ordering: this.ordering || undefined, is_minor: this.isMinor || undefined, status: this.statusFilter || undefined }));
+        this.store.dispatch(deleteUser({ id, page: this.currentPage, per_page: this.pageSize, search: this.term, ordering: this.ordering || undefined, is_minor: this.isMinor || undefined, is_suspended: this.statusFilter || undefined, filter_subs_status: this.filterSubsStatus || undefined, filter_country: this.filterCountry || undefined }));
       }
     });
   }

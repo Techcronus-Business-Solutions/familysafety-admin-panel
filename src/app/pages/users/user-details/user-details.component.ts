@@ -11,7 +11,7 @@ import { NgxIntlTelInputModule, CountryISO, SearchCountryField } from 'ngx-intl-
 import { loadUser, updateUser, updateUserSuccess, updateUserFailure } from '../../../store/Users/user.actions';
 import { selectEntities } from '../../../store/Users/user.reducer';
 import { UserService } from '../user.service';
-import { toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
+import { COUNTRY_CODES, toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
 
 @Component({
   selector: 'app-user-details',
@@ -23,6 +23,7 @@ import { toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
 export class UserDetailsComponent implements OnInit, OnDestroy {
   readonly CountryISO = CountryISO;
   readonly SearchCountryField = SearchCountryField;
+  selectedCountryISO: CountryISO = CountryISO.India;
   userdetails: any = null;
   subscriptionDetails: any = null;
   referralDetails: any = null;
@@ -88,13 +89,43 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   }
 
   private patchUserForm(user: any): void {
+    const phoneNumber = toNgxIntlTelInputValue(user.phone_number, user.country);
+    this.selectedCountryISO = this.resolveCountryISO(phoneNumber?.countryCode, user.country);
     this.form.patchValue({
       full_name: user.full_name,
       email: user.email,
-      phone_number: toNgxIntlTelInputValue(user.phone_number),
+      phone_number: phoneNumber,
       date_of_birth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().substring(0, 10) : '',
       is_minor: user.is_minor
     });
+  }
+
+  private resolveCountryISO(isoCode?: string, countryName?: string): CountryISO {
+    const countryIso = isoCode?.toLowerCase()
+      ?? COUNTRY_CODES.find(country => country.name.toLowerCase() === countryName?.trim().toLowerCase())?.iso2.toLowerCase();
+    return Object.values(CountryISO).find(value => value.toLowerCase() === countryIso) ?? CountryISO.India;
+  }
+
+  get socialLoginDisplay(): string {
+    const provider = this.userdetails?.social_provider;
+    if (!provider) {
+      return '-';
+    }
+    return provider.trim().toLowerCase() === 'manual' ? 'No' : provider;
+  }
+
+  get subscriptionStartDate(): string | null {
+    return this.userdetails?.subscription_details?.start_date
+      ?? this.subscriptionDetails?.start_date
+      ?? this.subscriptionDetails?.current_period_start
+      ?? null;
+  }
+
+  get subscriptionEndDate(): string | null {
+    return this.userdetails?.subscription_details?.end_date
+      ?? this.subscriptionDetails?.end_date
+      ?? this.subscriptionDetails?.current_period_end
+      ?? null;
   }
 
   onSubmit(): void {

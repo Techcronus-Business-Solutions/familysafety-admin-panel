@@ -290,11 +290,14 @@ export function splitPhoneNumber(fullNumber: string | null | undefined): { dialC
  * it a full combined string directly leaves the dial code duplicated in the
  * visible input, since the component only strips it from objects, not strings.
  */
-export function toNgxIntlTelInputValue(fullNumber: string | null | undefined): { number: string; countryCode: string } | null {
+export function toNgxIntlTelInputValue(fullNumber: string | null | undefined, countryName?: string | null): { number: string; countryCode: string } | null {
   if (!fullNumber) {
     return null;
   }
   const { dialCode, number } = splitPhoneNumber(fullNumber);
-  const country = COUNTRY_CODES.find(c => c.dialCode === dialCode);
+  const normalizedCountryName = countryName?.trim().toLowerCase();
+  const country = COUNTRY_CODES.find(c =>
+    c.dialCode === dialCode && c.name.toLowerCase() === normalizedCountryName
+  ) ?? COUNTRY_CODES.find(c => c.dialCode === dialCode);
   return { number, countryCode: (country?.iso2 ?? 'in').toUpperCase() };
 }

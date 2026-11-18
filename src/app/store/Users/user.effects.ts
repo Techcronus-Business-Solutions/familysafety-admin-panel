@@ -47,8 +47,10 @@ export class UserEffects {
         const search = action && action.search ? action.search : undefined;
         const ordering = action && action.ordering ? action.ordering : undefined;
         const is_minor = action?.is_minor;
-        const status = action?.status;
-        return this.userService.getUsers(token, page, search, perPage, ordering, is_minor, status).pipe(
+        const is_suspended = action?.is_suspended;
+        const filter_subs_status = action?.filter_subs_status;
+        const filter_country = action?.filter_country;
+        return this.userService.getUsers(token, page, search, perPage, ordering, is_minor, is_suspended, filter_subs_status, filter_country).pipe(
           tap((data: any) => console.debug('[UserEffects] getUsers response:', data)),
           map((data: any) => loadUsersSuccess({
             users: (data && data.users) ? data.users : [],
@@ -79,7 +81,7 @@ export class UserEffects {
         return this.userService.suspendUser(token, id).pipe(
           switchMap((res: any) => [
             userSuspendSuccess({ id, response: res }),
-            loadUsers({ page: currentPage, per_page: currentPerPage, search: currentSearch, ordering: currentOrdering, is_minor: action?.is_minor, status: action?.status })
+            loadUsers({ page: currentPage, per_page: currentPerPage, search: currentSearch, ordering: currentOrdering, is_minor: action?.is_minor, is_suspended: action?.is_suspended, filter_subs_status: action?.filter_subs_status, filter_country: action?.filter_country })
           ]),
           catchError((error) => of(userSuspendFailure({ error: this.getEffectErrorMessage(error) })))
         );
@@ -102,7 +104,7 @@ export class UserEffects {
         return this.userService.unsuspendUser(token, id).pipe(
           switchMap((res: any) => [
             userUnsuspendSuccess({ id, response: res }),
-            loadUsers({ page: currentPage, per_page: currentPerPage, search: currentSearch, ordering: currentOrdering, is_minor: action?.is_minor, status: action?.status })
+            loadUsers({ page: currentPage, per_page: currentPerPage, search: currentSearch, ordering: currentOrdering, is_minor: action?.is_minor, is_suspended: action?.is_suspended, filter_subs_status: action?.filter_subs_status, filter_country: action?.filter_country })
           ]),
           catchError((error) => of(userUnsuspendFailure({ error: this.getEffectErrorMessage(error) })))
         );
@@ -118,7 +120,7 @@ export class UserEffects {
         return this.userService.deleteUser(token, action.id).pipe(
           switchMap(() => [
             deleteUserSuccess({ id: action.id }),
-            loadUsers({ page: action.page, per_page: action.per_page, search: action.search, ordering: action.ordering, is_minor: action.is_minor, status: action.status })
+            loadUsers({ page: action.page, per_page: action.per_page, search: action.search, ordering: action.ordering, is_minor: action.is_minor, is_suspended: action.is_suspended, filter_subs_status: action.filter_subs_status, filter_country: action.filter_country })
           ]),
           catchError((error) => of(deleteUserFailure({ error: this.getEffectErrorMessage(error) })))
         );
