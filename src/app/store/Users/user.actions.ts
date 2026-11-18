@@ -21,7 +21,7 @@ export const deleteUserFailure = createAction('[Users] Delete User Failure', pro
 // Single user load/update actions
 export const loadUser = createAction('[Users] Load User', props<{ id: number }>());
 export const loadUserSuccess = createAction('[Users] Load User Success', props<{ user: User }>());
-export const loadUserFailure = createAction('[Users] Load User Failure', props<{ error: any }>());
+export const loadUserFailure = createAction('[Users] Load User Failure', props<{ id: number, error: any }>());
 
 export const updateUser = createAction('[Users] Update User API', props<{ id: number, changes: Partial<User> }>());
 export const updateUserSuccess = createAction('[Users] Update User Success', props<{ user: User }>());

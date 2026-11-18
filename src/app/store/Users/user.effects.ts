@@ -139,7 +139,7 @@ export class UserEffects {
             const user = data && data.user ? data.user : data;
             return loadUserSuccess({ user: { ...user, payment_history: data?.payment_history ?? null } });
           }),
-          catchError((error) => of(loadUserFailure({ error: this.getEffectErrorMessage(error) })))
+          catchError((error) => of(loadUserFailure({ id, error: this.getEffectErrorMessage(error) })))
         );
       })
     );
