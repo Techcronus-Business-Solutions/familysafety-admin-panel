@@ -98,6 +98,8 @@ export class UserListComponent implements OnDestroy {
     this.currentPage = savedState.page;
     this.pageSize = savedState.per_page;
     this.term = savedState.search || '';
+    this.isMinor = savedState.is_minor || '';
+    this.statusFilter = savedState.is_suspended || '';
     this.filterSubsStatus = savedState.filter_subs_status || '';
     this.filterCountry = savedState.filter_country || null;
     this.setOrderingState(savedState.ordering || '');
@@ -306,6 +308,8 @@ export class UserListComponent implements OnDestroy {
       per_page: this.pageSize,
       search: this.term || '',
       ordering: this.ordering || '',
+      is_minor: this.isMinor,
+      is_suspended: this.statusFilter,
       filter_subs_status: this.filterSubsStatus,
       filter_country: this.filterCountry || ''
     });
