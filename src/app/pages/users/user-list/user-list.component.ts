@@ -6,7 +6,8 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Subject } from 'rxjs';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
-import { loadUsers, userSuspend, userUnsuspend, deleteUser } from '../../../store/Users/user.actions';
+import { Actions, ofType } from '@ngrx/effects';
+import { deleteUser, loadUsers, loadUsersSuccess, userSuspend, userUnsuspend } from '../../../store/Users/user.actions';
 import { selectAll as selectAllUsers, selectCurrentPage, selectTotalPages, selectTotalUsers, selectUsersLoading } from '../../../store/Users/user.reducer';
 import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
@@ -49,6 +50,7 @@ export class UserListComponent implements OnDestroy {
   editData: any;
   allusers: any;
   loading = false;
+  listReady = false;
   currentPage: number = 1;
   totalPages: number = 1;
   totalUsers: number = 0;
@@ -70,7 +72,7 @@ export class UserListComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
   private searchTimeout: any;
 
-  constructor(private formBuilder: UntypedFormBuilder, public store: Store, public datepipe: DatePipe, private router: Router, private listState: ListStateService) {
+  constructor(private formBuilder: UntypedFormBuilder, public store: Store, public datepipe: DatePipe, private router: Router, private listState: ListStateService, private actions$: Actions) {
   }
 
   ngOnInit(): void {
@@ -109,6 +111,11 @@ export class UserListComponent implements OnDestroy {
     this.store.select(selectUsersLoading).pipe(
       takeUntil(this.destroy$)
     ).subscribe((l) => { this.loading = l; });
+
+    this.actions$.pipe(
+      ofType(loadUsersSuccess),
+      takeUntil(this.destroy$)
+    ).subscribe(() => { this.listReady = true; });
 
     this.store.select(selectAllUsers).pipe(
       takeUntil(this.destroy$)
