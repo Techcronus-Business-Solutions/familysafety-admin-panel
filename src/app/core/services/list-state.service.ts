@@ -5,6 +5,8 @@ export interface ListState {
   per_page: number;
   search?: string;
   ordering?: string;
+  is_minor?: string;
+  is_suspended?: string;
   filter_subs_status?: string;
   filter_country?: string;
 }
@@ -14,7 +16,7 @@ type ListStateKey = 'users' | 'subscriptions' | 'group';
 @Injectable({ providedIn: 'root' })
 export class ListStateService {
   private readonly defaults: Record<ListStateKey, ListState> = {
-    users: { page: 1, per_page: 10, search: '', ordering: '' },
+    users: { page: 1, per_page: 10, search: '', ordering: '', is_minor: '', is_suspended: '' },
     subscriptions: { page: 1, per_page: 10, search: '' },
     group: { page: 1, per_page: 10, search: '' }
   };
