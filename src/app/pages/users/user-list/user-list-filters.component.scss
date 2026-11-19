@@ -34,7 +34,7 @@
 .user-filter-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  grid-template-columns: 0.7fr 0.8fr 0.95fr 1.25fr 1fr auto;
 }
 
 .user-filter-field {
@@ -48,6 +48,7 @@
   }
 
   .country-filter,
+  .user-filter-select,
   .form-control,
   .form-select {
     min-height: 38px;
@@ -97,6 +98,10 @@
   min-height: 38px;
 }
 
+:host ::ng-deep .user-filter-select .ng-select-container {
+  min-height: 38px;
+}
+
 :host ::ng-deep .country-filter .ng-value,
 :host ::ng-deep .country-filter .ng-value-container {
   min-width: 0;
@@ -110,17 +115,22 @@
 
 @container (max-width: 900px) {
   .user-filter-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-}
 
-@container (max-width: 575px) {
-  .user-filter-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .country-filter-field,
+  .user-filter-field:nth-child(5) {
+    grid-column: span 2;
   }
 
   .user-filter-actions {
     grid-column: 1 / -1;
+  }
+}
+
+@container (max-width: 700px) {
+  .user-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -129,6 +139,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .country-filter-field,
+  .user-filter-field:nth-child(5),
   .user-filter-actions {
     grid-column: auto;
   }

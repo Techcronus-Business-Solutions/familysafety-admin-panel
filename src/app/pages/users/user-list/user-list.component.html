@@ -39,36 +39,40 @@
               <div class="user-filter-grid">
                 <div class="user-filter-field">
                   <label for="minorFilter">Minor</label>
-                  <select id="minorFilter" title="Filter by Minor" class="form-select form-select-sm"
-                    [(ngModel)]="isMinor" (change)="onFilterChange()">
-                    <option value="">All</option>
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
+                  <ng-select labelForId="minorFilter" title="Filter by Minor"
+                    class="user-filter-select" [(ngModel)]="isMinor" [clearable]="false" [searchable]="false"
+                    (change)="onFilterChange()">
+                    <ng-option [value]="''">All</ng-option>
+                    <ng-option value="true">Yes</ng-option>
+                    <ng-option value="false">No</ng-option>
+                  </ng-select>
                 </div>
                 <div class="user-filter-field">
                   <label for="statusFilter">User Status</label>
-                  <select id="statusFilter" title="Filter by Status" class="form-select form-select-sm"
-                    [(ngModel)]="statusFilter" (change)="onFilterChange()">
-                    <option value="">All</option>
-                    <option value="false">Active</option>
-                    <option value="true">Suspended</option>
-                  </select>
+                  <ng-select labelForId="statusFilter" title="Filter by Status"
+                    class="user-filter-select" [(ngModel)]="statusFilter" [clearable]="false"
+                    [searchable]="false" (change)="onFilterChange()">
+                    <ng-option [value]="''">All</ng-option>
+                    <ng-option value="false">Active</ng-option>
+                    <ng-option value="true">Suspended</ng-option>
+                  </ng-select>
                 </div>
                 <div class="user-filter-field">
                   <label for="subscriptionStatusFilter">Subscription Status</label>
-                  <select id="subscriptionStatusFilter" title="Filter by Subscription Status"
-                    class="form-select form-select-sm" [(ngModel)]="filterSubsStatus" (change)="onFilterChange()">
-                    <option value="">All</option>
-                    <option value="trialing">Trial</option>
-                    <option value="active">Active</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="expired">Expired</option>
-                    <option value="referral_grace">Referral Grace</option>
-                    <option value="none">None</option>
-                  </select>
+                  <ng-select labelForId="subscriptionStatusFilter"
+                    title="Filter by Subscription Status" class="user-filter-select"
+                    [(ngModel)]="filterSubsStatus" [clearable]="false" [searchable]="false"
+                    (change)="onFilterChange()">
+                    <ng-option [value]="''">All</ng-option>
+                    <ng-option value="trialing">Trial</ng-option>
+                    <ng-option value="active">Active</ng-option>
+                    <ng-option value="cancelled">Cancelled</ng-option>
+                    <ng-option value="expired">Expired</ng-option>
+                    <ng-option value="referral_grace">Referral Grace</ng-option>
+                    <ng-option value="none">None</ng-option>
+                  </ng-select>
                 </div>
-                <div class="user-filter-field">
+                <div class="user-filter-field country-filter-field">
                   <label for="countryFilter">Country</label>
                   <ng-select id="countryFilter" title="Filter by Country" class="country-filter"
                     [items]="countryOptions" bindLabel="name" bindValue="isoCode" [(ngModel)]="filterCountry"
@@ -99,7 +103,7 @@
                   </div>
                 </div>
                 <div class="user-filter-actions">
-                  <button type="button" class="btn btn-outline-secondary user-list-toolbar-button"
+                  <button type="button" class="btn btn-outline-primary user-list-toolbar-button"
                     (click)="resetFilters()">
                     <i class="ri-refresh-line me-1"></i>Reset Filters
                   </button>
@@ -198,11 +202,11 @@
                   </td>
                   <td class="email" [title]="user.email">{{ user.email }}</td>
                   <td [title]="getCountryName(user.country)">
-                    <div class="d-flex align-items-center gap-2">
-                      <span *ngIf="getCountryFlagClass(user.country) as countryFlagClass"
-                        class="iti__flag country-flag" [ngClass]="countryFlagClass" aria-hidden="true"></span>
-                      <span class="country-name">{{ getCountryName(user.country) }}</span>
-                    </div>
+                    <span class="country-display">
+                      <i *ngIf="getCountryFlagClass(user.country) as countryFlagClass"
+                        class="iti__flag country-flag" [ngClass]="countryFlagClass" aria-hidden="true"></i>
+                      {{ getCountryName(user.country) }}
+                    </span>
                   </td>
                   <td class="phone" [title]="user.phone_number">{{ user.phone_number }}</td>
                   <td>
