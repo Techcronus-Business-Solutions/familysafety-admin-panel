@@ -21,7 +21,6 @@ type UserSortField =
   | 'email'
   | 'last_active'
   | 'registration_date'
-  | 'country'
   | 'subscription_end_date'
   | 'subscription_start_date';
 
@@ -30,7 +29,6 @@ const USER_SORT_FIELDS: readonly UserSortField[] = [
   'email',
   'last_active',
   'registration_date',
-  'country',
   'subscription_end_date',
   'subscription_start_date'
 ];
@@ -80,6 +78,7 @@ export class UserListComponent implements OnDestroy {
   statusFilter: string = '';
   filterSubsStatus: string = '';
   filterCountry: string | null = null;
+  showFilters = false;
   showExportModal = false;
   exporting = false;
   exportColumns = [
@@ -119,12 +118,21 @@ export class UserListComponent implements OnDestroy {
       status: ['', [Validators.required]]
     });
 
-    const prevUrl = this.router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl?.toString() ?? '';
-    if (prevUrl && !prevUrl.startsWith('/users')) {
+    const previousUrl = this.router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl?.toString() ?? '';
+    let savedState = this.listState.getState('users');
+    const hasSavedFilters = Boolean(
+      savedState.search ||
+      savedState.is_minor ||
+      savedState.is_suspended ||
+      savedState.filter_subs_status ||
+      savedState.filter_country
+    );
+
+    if (previousUrl && !previousUrl.startsWith('/users') && !hasSavedFilters) {
       this.listState.resetState('users');
+      savedState = this.listState.getState('users');
     }
 
-    const savedState = this.listState.getState('users');
     this.currentPage = savedState.page;
     this.pageSize = savedState.per_page;
     this.term = savedState.search || '';
@@ -132,6 +140,7 @@ export class UserListComponent implements OnDestroy {
     this.statusFilter = savedState.is_suspended || '';
     this.filterSubsStatus = savedState.filter_subs_status || '';
     this.filterCountry = savedState.filter_country || null;
+    this.showFilters = hasSavedFilters;
     this.setOrderingState(savedState.ordering || '');
     this.loadUsers();
     console.log("User Current Page:- ", this.currentPage, "Page Size:- ", this.pageSize, "Search Term:- ", this.term, "Ordering:- ", this.ordering);
@@ -196,7 +205,7 @@ export class UserListComponent implements OnDestroy {
   }
 
   getCountryName(country?: string): string {
-    return findCountryByName(country)?.name ?? country ?? '-';
+    return country || '-';
   }
 
   getSubscriptionStatus(user: any): string {
@@ -329,6 +338,21 @@ export class UserListComponent implements OnDestroy {
     this.loadUsers();
   }
 
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  resetFilters(): void {
+    clearTimeout(this.searchTimeout);
+    this.term = '';
+    this.isMinor = '';
+    this.statusFilter = '';
+    this.filterSubsStatus = '';
+    this.filterCountry = null;
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
   openExportModal(): void {
     this.showExportModal = true;
   }
@@ -399,13 +423,14 @@ export class UserListComponent implements OnDestroy {
   }
 
   private setOrderingState(ordering: string) {
-    this.ordering = ordering;
     const descending = ordering.startsWith('-');
     const field = descending ? ordering.slice(1) : ordering;
     if (isUserSortField(field)) {
+      this.ordering = ordering;
       this.sortField = field;
       this.sortDirection = descending ? 'desc' : 'asc';
     } else {
+      this.ordering = '';
       this.sortField = '';
       this.sortDirection = 'asc';
     }

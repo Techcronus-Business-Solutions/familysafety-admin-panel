@@ -69,7 +69,7 @@ export class UserService {
   }
 
   getUsers(token: string, page?: number, search?: string, per_page?: number, ordering?: string, is_minor?: string, is_suspended?: string, filter_subs_status?: string, filter_country?: string): Observable<any> {
-    let url = API_URL + 'user_list';
+    let url = API_URL + 'user_list/';
     const params: string[] = [];
     if (page) {
       params.push(`page=${page}`);

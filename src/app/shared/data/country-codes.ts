@@ -14,7 +14,8 @@ export function normalizeCountryName(country: string): string {
 }
 
 export function findCountryByName(countryName?: string | null): CountryCode | undefined {
-  const normalizedName = countryName ? normalizeCountryName(countryName) : '';
+  const countryWithoutDialCode = countryName?.replace(/\s*\(\+\d+\)\s*$/, '') ?? '';
+  const normalizedName = countryWithoutDialCode ? normalizeCountryName(countryWithoutDialCode) : '';
   if (!normalizedName) {
     return undefined;
   }

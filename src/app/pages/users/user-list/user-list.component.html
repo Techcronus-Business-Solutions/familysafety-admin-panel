@@ -11,7 +11,7 @@
             <div class="col-sm-auto">
             </div>
             <div class="col-sm d-flex justify-content-between align-items-center gap-2">
-              <div class="d-flex justify-content-sm-start align-items-center gap-2">
+              <div class="user-page-size-control d-flex justify-content-sm-start align-items-center gap-2">
                 <div class="d-flex align-items-center gap-2">
                   <label class="mb-0 item-per-page-label" for="pageSizeSelect">Show</label>
                   <select id="pageSizeSelect" #pageSizeSelect class="form-select form-select-sm" [value]="pageSize"
@@ -22,29 +22,43 @@
                   </select>
                 </div>
               </div>
-              <div class="d-flex justify-content-sm-end align-items-center gap-2 flex-wrap">
-                <div class="d-flex align-items-center gap-1">
-                  <label class="mb-0 text-nowrap">Minor</label>
-                  <select title="Filter by Minor" class="form-select form-select-sm" [(ngModel)]="isMinor"
-                    (change)="onFilterChange()">
+              <div class="user-toolbar-actions d-flex justify-content-sm-end align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-outline-primary user-list-toolbar-button" (click)="toggleFilters()"
+                  [attr.aria-expanded]="showFilters" aria-controls="userFilters">
+                  <i class="ri-filter-3-line me-1"></i>{{ showFilters ? 'Hide Filters' : 'Filter' }}
+                </button>
+                <button type="button" class="btn btn-primary user-list-toolbar-button" (click)="openExportModal()">
+                  <i class="ri-download-2-line me-1"></i>Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="userFilters" class="user-filter-panel mb-3" *ngIf="showFilters">
+            <div class="user-filter-panel-content">
+              <div class="user-filter-grid">
+                <div class="user-filter-field">
+                  <label for="minorFilter">Minor</label>
+                  <select id="minorFilter" title="Filter by Minor" class="form-select form-select-sm"
+                    [(ngModel)]="isMinor" (change)="onFilterChange()">
                     <option value="">All</option>
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
                 </div>
-                <div class="d-flex align-items-center gap-1">
-                  <label class="mb-0 text-nowrap">User Status</label>
-                  <select title="Filter by Status" class="form-select form-select-sm" [(ngModel)]="statusFilter"
-                    (change)="onFilterChange()">
+                <div class="user-filter-field">
+                  <label for="statusFilter">User Status</label>
+                  <select id="statusFilter" title="Filter by Status" class="form-select form-select-sm"
+                    [(ngModel)]="statusFilter" (change)="onFilterChange()">
                     <option value="">All</option>
                     <option value="false">Active</option>
                     <option value="true">Suspended</option>
                   </select>
                 </div>
-                <div class="d-flex align-items-center gap-1">
-                  <label class="mb-0 text-nowrap">Subscription Status</label>
-                  <select title="Filter by Subscription Status" class="form-select form-select-sm"
-                    [(ngModel)]="filterSubsStatus" (change)="onFilterChange()">
+                <div class="user-filter-field">
+                  <label for="subscriptionStatusFilter">Subscription Status</label>
+                  <select id="subscriptionStatusFilter" title="Filter by Subscription Status"
+                    class="form-select form-select-sm" [(ngModel)]="filterSubsStatus" (change)="onFilterChange()">
                     <option value="">All</option>
                     <option value="trialing">Trial</option>
                     <option value="active">Active</option>
@@ -54,11 +68,12 @@
                     <option value="none">None</option>
                   </select>
                 </div>
-                <div class="d-flex align-items-center gap-1">
-                  <label class="mb-0 text-nowrap">Country</label>
-                  <ng-select title="Filter by Country" class="country-filter" [items]="countryOptions"
-                    bindLabel="name" bindValue="isoCode" [(ngModel)]="filterCountry" [clearable]="true"
-                    [searchable]="true" placeholder="All Countries" (change)="onFilterChange()">
+                <div class="user-filter-field">
+                  <label for="countryFilter">Country</label>
+                  <ng-select id="countryFilter" title="Filter by Country" class="country-filter"
+                    [items]="countryOptions" bindLabel="name" bindValue="isoCode" [(ngModel)]="filterCountry"
+                    [clearable]="true" [searchable]="true" placeholder="All Countries"
+                    (change)="onFilterChange()">
                     <ng-template ng-label-tmp let-item="item">
                       <div class="country-option d-flex align-items-center gap-2">
                         <span class="iti__flag country-flag" [ngClass]="'iti__' + item.isoCode.toLowerCase()"
@@ -75,14 +90,20 @@
                     </ng-template>
                   </ng-select>
                 </div>
-                <div class="search-box d-flex align-items-center">
-                  <input type="text" class="form-control search" placeholder="Search..." [(ngModel)]="term"
-                    (input)="onSearchInput()">
-                  <i class="ri-search-line search-icon ms-2"></i>
+                <div class="user-filter-field">
+                  <label for="userSearchFilter">Search</label>
+                  <div class="search-box">
+                    <input id="userSearchFilter" type="text" class="form-control search" placeholder="Search users..."
+                      [(ngModel)]="term" (input)="onSearchInput()">
+                    <i class="ri-search-line search-icon" aria-hidden="true"></i>
+                  </div>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm" (click)="openExportModal()">
-                  <i class="ri-download-2-line me-1"></i>Export
-                </button>
+                <div class="user-filter-actions">
+                  <button type="button" class="btn btn-outline-secondary user-list-toolbar-button"
+                    (click)="resetFilters()">
+                    <i class="ri-refresh-line me-1"></i>Reset Filters
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -104,12 +125,7 @@
                       <i class="sort-icon" [ngClass]="getSortIcon('email')"></i>
                     </span>
                   </th>
-                  <th scope="col" class="cursor-pointer sortable-heading" (click)="onSort('country')">
-                    <span class="th-content">
-                      <span>Country</span>
-                      <i class="sort-icon" [ngClass]="getSortIcon('country')"></i>
-                    </span>
-                  </th>
+                  <th scope="col">Country</th>
                   <th scope="col">Phone Number</th>
                   <th scope="col">
                     <span>Subscription Status</span>
