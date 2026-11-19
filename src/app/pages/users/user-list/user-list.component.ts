@@ -41,7 +41,7 @@ function isUserSortField(field: string): field is UserSortField {
   selector: 'app-user-list',
   standalone: false,
   templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss'],
+  styleUrls: ['./user-list.component.scss', './user-list-filters.component.scss'],
   providers: [DecimalPipe, DatePipe],
 })
 export class UserListComponent implements OnDestroy {

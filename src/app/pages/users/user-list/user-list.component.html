@@ -92,10 +92,10 @@
                 </div>
                 <div class="user-filter-field">
                   <label for="userSearchFilter">Search</label>
-                  <div class="search-box">
-                    <input id="userSearchFilter" type="text" class="form-control search" placeholder="Search users..."
+                  <div class="user-search-input">
+                    <i class="ri-search-line user-search-icon" aria-hidden="true"></i>
+                    <input id="userSearchFilter" type="text" class="form-control search" placeholder="Search..."
                       [(ngModel)]="term" (input)="onSearchInput()">
-                    <i class="ri-search-line search-icon" aria-hidden="true"></i>
                   </div>
                 </div>
                 <div class="user-filter-actions">
