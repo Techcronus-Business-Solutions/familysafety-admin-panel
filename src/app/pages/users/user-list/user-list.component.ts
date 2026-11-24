@@ -395,11 +395,14 @@ export class UserListComponent implements OnDestroy {
             return;
           }
 
+          const fileName = this.getExportFileName(response.headers.get('Content-Disposition'))
+            || this.getFallbackExportFileName();
+
           const blob = new Blob([response.body], { type: 'text/csv;charset=utf-8' });
           const downloadUrl = URL.createObjectURL(blob);
           const downloadLink = document.createElement('a');
           downloadLink.href = downloadUrl;
-          downloadLink.download = this.getExportFileName(response.headers.get('Content-Disposition'));
+          downloadLink.download = fileName;
           document.body.appendChild(downloadLink);
           downloadLink.click();
           downloadLink.remove();
@@ -414,12 +417,37 @@ export class UserListComponent implements OnDestroy {
       });
   }
 
-  private getExportFileName(contentDisposition: string | null): string {
-    const fileName = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1];
-    if (!fileName) {
-      return 'users.csv';
+  private getExportFileName(contentDisposition: string | null): string | null {
+    if (!contentDisposition) {
+      return null;
     }
-    return fileName.toLowerCase().endsWith('.csv') ? fileName : `${fileName}.csv`;
+
+    const encodedFileName = contentDisposition.match(/filename\*=[^']*'[^']*'([^;]+)/i)?.[1];
+    const quotedFileName = contentDisposition.match(/filename="?([^";]+)"?/i)?.[1];
+    let fileName = quotedFileName?.trim();
+
+    if (encodedFileName) {
+      try {
+        fileName = decodeURIComponent(encodedFileName.trim());
+      } catch {
+        fileName = encodedFileName.trim();
+      }
+    }
+
+    if (!fileName) {
+      return null;
+    }
+
+    return fileName;
+  }
+
+  private getFallbackExportFileName(): string {
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+
+    return `Anglerprotect-UserExport-${day}-${month}-${year}.csv`;
   }
 
   private setOrderingState(ordering: string) {
