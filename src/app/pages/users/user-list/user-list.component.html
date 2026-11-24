@@ -27,7 +27,8 @@
                   [attr.aria-expanded]="showFilters" aria-controls="userFilters">
                   <i class="ri-filter-3-line me-1"></i>{{ showFilters ? 'Hide Filters' : 'Filter' }}
                 </button>
-                <button type="button" class="btn btn-primary user-list-toolbar-button" (click)="openExportModal()">
+                <button type="button" class="btn btn-primary user-list-toolbar-button" (click)="openExportModal()"
+                  [disabled]="!hasExportableUsers">
                   <i class="ri-download-2-line me-1"></i>Export
                 </button>
               </div>
@@ -327,7 +328,8 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-light" [disabled]="exporting" (click)="closeExportModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="!hasSelectedExportColumns || exporting"
+        <button type="button" class="btn btn-primary"
+          [disabled]="!hasExportableUsers || !hasSelectedExportColumns || exporting"
           (click)="exportUsers()">
           <span *ngIf="exporting" class="spinner-border spinner-border-sm me-1" role="status"></span>
           <i *ngIf="!exporting" class="ri-download-2-line me-1"></i>
