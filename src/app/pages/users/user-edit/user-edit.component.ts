@@ -10,7 +10,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { loadUser, updateUser, updateUserSuccess, updateUserFailure } from '../../../store/Users/user.actions';
 import { selectEntities } from '../../../store/Users/user.reducer';
-import { COUNTRY_CODES, DEFAULT_COUNTRY_CODE, splitPhoneNumber } from 'src/app/shared/data/country-codes';
+import { COUNTRY_CODES, DEFAULT_COUNTRY_ISO, findCountryByName, splitPhoneNumber } from 'src/app/shared/data/country-codes';
 
 @Component({
   selector: 'app-user-edit',
@@ -32,7 +32,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       full_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      country_code: [DEFAULT_COUNTRY_CODE],
+      country_iso_code: [DEFAULT_COUNTRY_ISO, Validators.required],
       phone_number: [''],
       date_of_birth: [''],
       is_minor: [false],
@@ -55,10 +55,13 @@ export class UserEditComponent implements OnInit, OnDestroy {
       const user = entities && entities[this.userId] ? entities[this.userId] : null;
       if (user) {
         const { dialCode, number } = splitPhoneNumber(user.phone_number);
+        const dialMatches = COUNTRY_CODES.filter(country => country.dial === dialCode);
+        const phoneCountry = findCountryByName(user.country)
+          ?? dialMatches[0];
         this.form.patchValue({
           full_name: user.full_name,
           email: user.email,
-          country_code: dialCode || DEFAULT_COUNTRY_CODE,
+          country_iso_code: phoneCountry?.isoCode ?? DEFAULT_COUNTRY_ISO,
           phone_number: number,
           date_of_birth: user.date_of_birth,
           is_minor: user.is_minor,
@@ -74,11 +77,16 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.form.invalid) return;
+    const selectedCountry = COUNTRY_CODES.find(country => country.isoCode === this.form.value.country_iso_code);
+    if (!selectedCountry) {
+      this.form.get('country_iso_code')?.setErrors({ invalidCountry: true });
+      return;
+    }
     const changes = {
       ...this.form.value,
-      phone_number: this.form.value.country_code + this.form.value.phone_number,
+      phone_number: selectedCountry.dial + this.form.value.phone_number,
     };
-    delete changes.country_code;
+    delete changes.country_iso_code;
     this.showPreloader();
     this.store.dispatch(updateUser({ id: this.userId, changes }));
   }

@@ -7,23 +7,21 @@ import { Actions, ofType } from '@ngrx/effects';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { NgxIntlTelInputModule, CountryISO, SearchCountryField } from 'ngx-intl-tel-input';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { loadUser, loadUserSuccess, loadUserFailure, updateUser, updateUserSuccess, updateUserFailure } from '../../../store/Users/user.actions';
 import { selectEntities } from '../../../store/Users/user.reducer';
 import { UserService } from '../user.service';
-import { COUNTRY_CODES, toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
+import { COUNTRY_CODES, DEFAULT_COUNTRY_ISO, findCountryByName, toNgxIntlTelInputValue } from 'src/app/shared/data/country-codes';
 
 @Component({
   selector: 'app-user-details',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, BsDropdownModule, NgxIntlTelInputModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, BsDropdownModule, NgSelectModule],
   templateUrl: './user-details.component.html',
   styleUrl: './user-details.component.scss',
 })
 export class UserDetailsComponent implements OnInit, OnDestroy {
-  readonly CountryISO = CountryISO;
-  readonly SearchCountryField = SearchCountryField;
-  selectedCountryISO: CountryISO | undefined;
+  readonly countryCodes = COUNTRY_CODES;
   userdetails: any = null;
   subscriptionDetails: any = null;
   referralDetails: any = null;
@@ -48,6 +46,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       full_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      phone_country_iso: [DEFAULT_COUNTRY_ISO, Validators.required],
       phone_number: [''],
       date_of_birth: [''],
       is_minor: [false]
@@ -118,22 +117,14 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   private patchUserForm(user: any): void {
     const phoneNumber = toNgxIntlTelInputValue(user.phone_number, user.country);
-    this.selectedCountryISO = this.resolveCountryISO(user.country);
     this.form.patchValue({
       full_name: user.full_name,
       email: user.email,
-      phone_number: phoneNumber,
+      phone_country_iso: phoneNumber?.countryCode || findCountryByName(user.country)?.isoCode || DEFAULT_COUNTRY_ISO,
+      phone_number: phoneNumber?.number ?? '',
       date_of_birth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().substring(0, 10) : '',
       is_minor: user.is_minor
     });
-  }
-
-  private resolveCountryISO(countryName?: string): CountryISO | undefined {
-    const normalizedCountryName = countryName?.trim().toLowerCase();
-    const countryIso = COUNTRY_CODES.find(country =>
-      country.name.toLowerCase() === normalizedCountryName || country.iso2.toLowerCase() === normalizedCountryName
-    )?.iso2.toLowerCase();
-    return Object.values(CountryISO).find(value => value.toLowerCase() === countryIso);
   }
 
   get socialLoginDisplay(): string {
@@ -161,10 +152,17 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    const phoneValue = this.form.value.phone_number;
+    const { phone_country_iso, phone_number, ...userChanges } = this.form.value;
+    const selectedCountry = COUNTRY_CODES.find(country => country.isoCode === phone_country_iso);
+    if (!selectedCountry) {
+      this.form.get('phone_country_iso')?.setErrors({ invalidCountry: true });
+      return;
+    }
+
+    const normalizedPhoneNumber = String(phone_number ?? '').replace(/\D/g, '');
     const changes = {
-      ...this.form.value,
-      phone_number: phoneValue && typeof phoneValue === 'object' ? phoneValue.e164Number : phoneValue,
+      ...userChanges,
+      phone_number: normalizedPhoneNumber ? `${selectedCountry.dial}${normalizedPhoneNumber}` : '',
     };
     this.showPreloader();
     this.store.dispatch(updateUser({ id: this.userId, changes }));

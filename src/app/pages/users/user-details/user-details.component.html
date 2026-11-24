@@ -103,14 +103,31 @@
               </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold">Phone Number</label>
-                <ngx-intl-tel-input [cssClass]="'form-control'" [enablePlaceholder]="true" [searchCountryFlag]="true"
-                  [searchCountryField]="[SearchCountryField.Name, SearchCountryField.DialCode]"
-                  [selectedCountryISO]="$any(selectedCountryISO)" [separateDialCode]="true" [phoneValidation]="true"
-                  [maxLength]="15" inputId="phone_number" name="phone_number" formControlName="phone_number">
-                </ngx-intl-tel-input>
-                <div *ngIf="form.get('phone_number')?.invalid && form.get('phone_number')?.touched"
+                <div class="phone-input-group">
+                  <ng-select class="phone-country-select" [items]="countryCodes" bindLabel="name" bindValue="isoCode"
+                    formControlName="phone_country_iso" [clearable]="false" [searchable]="true">
+                    <ng-template ng-label-tmp let-item="item">
+                      <span class="phone-country-label phone-country-selected-label">
+                        <span class="iti__flag phone-country-flag"
+                          [ngClass]="'iti__' + item.isoCode.toLowerCase()" aria-hidden="true"></span>
+                        <span class="phone-country-dial">{{ item.dial }}</span>
+                      </span>
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      <span class="phone-country-label">
+                        <span class="iti__flag phone-country-flag"
+                          [ngClass]="'iti__' + item.isoCode.toLowerCase()" aria-hidden="true"></span>
+                        <span class="phone-country-name">{{ item.name }}</span>
+                        <span class="phone-country-dial">{{ item.dial }}</span>
+                      </span>
+                    </ng-template>
+                  </ng-select>
+                  <input type="tel" class="form-control phone-number-input" formControlName="phone_number"
+                    inputmode="tel" maxlength="15" placeholder="Phone number" id="phone_number" name="phone_number">
+                </div>
+                <div *ngIf="form.get('phone_country_iso')?.invalid && form.get('phone_country_iso')?.touched"
                   class="text-danger small mt-1">
-                  Enter a valid phone number.
+                  Select a country.
                 </div>
               </div>
               <!-- <div class="col-md-4">
