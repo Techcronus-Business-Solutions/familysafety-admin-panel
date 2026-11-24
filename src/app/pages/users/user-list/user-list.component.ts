@@ -354,6 +354,10 @@ export class UserListComponent implements OnDestroy {
   }
 
   openExportModal(): void {
+    if (!this.hasExportableUsers) {
+      return;
+    }
+
     this.showExportModal = true;
   }
 
@@ -367,7 +371,15 @@ export class UserListComponent implements OnDestroy {
     return this.exportColumns.some(column => column.selected);
   }
 
+  get hasExportableUsers(): boolean {
+    return this.listReady && !this.loading && Boolean(this.allusers?.length);
+  }
+
   exportUsers(): void {
+    if (!this.hasExportableUsers) {
+      return;
+    }
+
     const columns = this.exportColumns.filter(column => column.selected).map(column => column.key);
     if (!columns.length) {
       return;
